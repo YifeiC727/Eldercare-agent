@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>AI陪伴助手 - 智能情感分析</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+      body {
+        font-family: 'Microsoft YaHei', Arial, sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+        font-size: 20px;
+      }
+      .container {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+      }
+      h2 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.2em;
+      }
+      .chat-container {
+        border: 2px solid #2196f3;
+        border-radius: 10px;
+        height: 420px;
+        overflow-y: scroll;
+        padding: 18px;
+        margin-bottom: 20px;
+        background-color: #fafafa;
+        font-size: 1.1em;
+      }
+      .message {
+        margin-bottom: 18px;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 1.1em;
+      }
+      .user-message {
+        background-color: #e3f2fd;
+        border-left: 6px solid #2196f3;
+      }
+      .ai-message {
+        background-color: #f3e5f5;
+        border-left: 6px solid #9c27b0;
+      }
+      .emotion-info {
+        font-size: 15px;
+        color: #444;
+        margin-top: 7px;
+        padding: 7px;
+        background-color: #fff3cd;
+        border-radius: 4px;
+      }
+      .input-section, .voice-section {
+        margin-bottom: 24px;
+        border: 2px dashed #bdbdbd;
+        border-radius: 10px;
+        background: #f7faff;
+        padding: 18px 18px 10px 18px;
+      }
+      .input-section:focus-within, .voice-section:focus-within {
+        border-color: #2196f3;
+        box-shadow: 0 0 0 2px #90caf9;
+      }
+      textarea, input[type="file"] {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #bdbdbd;
+        border-radius: 7px;
+        resize: vertical;
+        font-family: inherit;
+        font-size: 1.1em;
+        outline: none;
+        margin-bottom: 10px;
+      }
+      textarea:focus, input[type="file"]:focus {
+        border-color: #2196f3;
+        box-shadow: 0 0 0 2px #90caf9;
+      }
+      .btn {
+        background-color: #2196f3;
+        color: white;
+        border: none;
+        padding: 18px 32px;
+        border-radius: 7px;
+        cursor: pointer;
+        margin: 8px 8px 8px 0;
+        font-size: 1.1em;
+        display: inline-flex;
+        align-items: center;
+        transition: background 0.2s;
+      }
+      .btn:focus {
+        outline: 3px solid #1976d2;
+        outline-offset: 2px;
+      }
+      .btn svg {
+        margin-right: 8px;
+      }
+      .btn:hover {
+        background-color: #1976d2;
+      }
+      .btn-danger {
+        background-color: #f44336;
+      }
+      .btn-danger:hover {
+        background-color: #d32f2f;
+      }
+      .btn-success {
+        background-color: #4caf50;
+      }
+      .btn-success:hover {
+        background-color: #388e3c;
+      }
+      .file-input {
+        margin: 10px 0;
+      }
+      .status {
+        margin-top: 16px;
+        padding: 16px;
+        border-radius: 6px;
+        font-size: 1.1em;
+        display: none;
+        text-align: center;
+      }
+      .status.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 2px solid #c3e6cb;
+      }
+      .status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 2px solid #f5c6cb;
+      }
+      .loading {
+        display: none;
+        text-align: center;
+        color: #1976d2;
+        margin: 16px 0;
+        font-size: 1.2em;
+      }
+      .section-title {
+        font-size: 1.2em;
+        color: #1976d2;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+      .clear-btn {
+        float: right;
+        background: #f44336;
+        color: #fff;
+        font-size: 1em;
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        margin-top: -10px;
+      }
+      .clear-btn:focus {
+        outline: 3px solid #d32f2f;
+      }
+      .progress-bar {
+        width: 100%;
+        height: 18px;
+        background: #e0e0e0;
+        border-radius: 8px;
+        margin: 10px 0 0 0;
+        overflow: hidden;
+        display: none;
+      }
+      .progress-bar-inner {
+        height: 100%;
+        background: #2196f3;
+        width: 0%;
+        transition: width 0.2s;
+      }
+      .recording-indicator { display: none; }
+      .recording-indicator.active { display: inline; color: #f44336; font-weight: bold; margin-left: 10px; }
+    </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🤖 AI 陪伴助手 - 智能情感分析</h2>
+    <button class="clear-btn" onclick="clearChat()" aria-label="清空聊天记录">🗑️ 清空聊天</button>
+    <div class="chat-container" id="chat_log" tabindex="0" aria-label="聊天记录"></div>
+
+    <!-- 文本输入 -->
+    <div class="input-section" tabindex="0">
+      <div class="section-title">💬 文本对话</div>
+      <p style="font-size:18px;color:#888;">在下方输入框输入内容，点击“发送消息”或按回车发送。</p>
+      <textarea id="user_input" rows="3" placeholder="请输入您想说的话..." aria-label="文本输入区"></textarea>
+      <button class="btn" onclick="sendMessage()" aria-label="发送消息">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M2 21l21-9-21-9v7l15 2-15 2z"/></svg>
+        发送消息
+      </button>
+    </div>
+
+    <!-- 语音输入方式1：文件上传 -->
+    <div class="voice-section" tabindex="0">
+      <div class="section-title">📁 方式一：上传音频文件</div>
+      <p style="font-size:18px;color:#888;">支持格式：WAV, PCM, AMR, M4A（最大10MB）。选择文件后点击“上传并识别”。</p>
+      <input type="file" id="audio_file" accept="audio/*" class="file-input" aria-label="上传音频文件">
+      <button class="btn" onclick="sendAudioFile()" aria-label="上传并识别">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M5 20h14v-2H5m14-9h-4V3H9v6H5l7 7 7-7z"/></svg>
+        上传并识别
+      </button>
+    </div>
+
+    <!-- 语音输入方式2：浏览器录音 -->
+    <div class="voice-section" tabindex="0">
+      <div class="section-title">🎤 方式二：浏览器录音</div>
+      <p style="font-size:18px;color:#888;">点击下方按钮开始录音，再次点击停止并自动识别。录音时会显示进度。</p>
+      <button class="btn btn-success" id="recordBtn" onclick="toggleRecording()" aria-label="开始录音">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3m5-3a1 1 0 0 1 2 0c0 3.87-3.13 7-7 7s-7-3.13-7-7a1 1 0 0 1 2 0c0 2.76 2.24 5 5 5s5-2.24 5-5M19 19v2H5v-2h14z"/></svg>
+        开始录音
+      </button>
+      <span class="recording-indicator" id="recordingIndicator">● 录音中...</span>
+      <div class="progress-bar" id="recordProgress"><div class="progress-bar-inner" id="progressBarInner"></div></div>
+    </div>
+
+    <!-- 语音输入方式3：实时语音识别 -->
+    <div class="voice-section" tabindex="0">
+      <div class="section-title">🔴 方式三：实时语音识别</div>
+      <p style="font-size:18px;color:#888;">点击下方按钮开始实时识别，适合连续对话。识别时会有明显提示。</p>
+      <button class="btn btn-success" id="realtimeBtn" onclick="toggleRealtimeRecording()" aria-label="开始实时识别">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-14a6 6 0 1 1 0 12A6 6 0 0 1 12 6z"/></svg>
+        开始实时识别
+      </button>
+      <span class="recording-indicator" id="realtimeIndicator">● 实时识别中...</span>
+    </div>
+
+    <div class="status" id="status"></div>
+    <div class="loading" id="loading">处理中，请稍候...</div>
+  </div>
+  <script>
+    // 聊天消息追加到页面
+    function addMessage(content, isUser = true, emotionData = null, liwcData = null) {
+      const chatLog = document.getElementById("chat_log");
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+      let html = `<strong>${isUser ? '你' : 'AI助手'}:</strong> ${content}`;
+      if (emotionData && !isUser) {
+        html += `<div class=\"emotion-info\">\n          <strong>情感分析:</strong> \n          愤怒: ${(emotionData.anger * 100).toFixed(1)}% | \n          悲伤: ${(emotionData.sadness * 100).toFixed(1)}% | \n          喜悦: ${(emotionData.joy * 100).toFixed(1)}% | \n          强度: ${(emotionData.intensity * 100).toFixed(1)}%\n        </div>`;
+      }
+      if (liwcData && !isUser && Object.keys(liwcData).length > 0) {
+        html += `<div class=\"emotion-info\"><strong>LIWC分析:</strong> ` +
+          Object.entries(liwcData).map(([k, v]) => `${k}: ${(v * 100).toFixed(1)}%`).join(' | ') +
+          `</div>`;
+      }
+      messageDiv.innerHTML = html;
+      chatLog.appendChild(messageDiv);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    // 文本对话
+    async function sendMessage() {
+      const userMessage = document.getElementById("user_input").value.trim();
+      if (!userMessage) return;
+      addMessage(userMessage, true);
+      document.getElementById("user_input").value = "";
+      toggleLoading(true);
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userMessage })
+        });
+        const data = await response.json();
+        if (data.error) {
+          showStatus(data.error, 'error');
+        } else {
+          addMessage(data.reply, false, data.emotion, data.liwc);
+        }
+      } catch (error) {
+        showStatus('发送消息失败: ' + error.message, 'error');
+      } finally {
+        toggleLoading(false);
+      }
+    }
+
+    // 上传音频文件
+    async function sendAudioFile() {
+      const fileInput = document.getElementById('audio_file');
+      if (!fileInput.files.length) {
+        showStatus('请选择音频文件', 'error');
+        return;
+      }
+      const formData = new FormData();
+      formData.append('audio', fileInput.files[0]);
+      toggleLoading(true);
+      try {
+        const response = await fetch('/chat_audio', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        if (data.error) {
+          showStatus(data.error, 'error');
+          addMessage('[音频识别失败]', true);
+        } else {
+          addMessage(data.text || '[音频已上传]', true);
+          addMessage(data.reply, false, data.emotion, data.liwc);
+        }
+      } catch (error) {
+        showStatus('音频上传失败: ' + error.message, 'error');
+      } finally {
+        toggleLoading(false);
+        fileInput.value = '';
+      }
+    }
+
+    // 录音进度条和失败计数
+    let isRecording = false;
+    let mediaRecorder, audioChunks = [];
+    let recordTimer = null;
+    let recordSeconds = 0;
+    let maxRecordSeconds = 60; // 支持最长60秒
+    let recordFailCount = 0;
+    function toggleRecording() {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+          clearInterval(recordTimer);
+          document.getElementById('progressBarInner').style.width = '0%';
+          document.getElementById('recordProgress').style.display = 'none';
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          const formData = new FormData();
+          formData.append('audio', audioBlob, 'record.wav');
+          toggleLoading(true);
+          try {
+            const response = await fetch('/chat_audio', {
+              method: 'POST',
+              body: formData
+            });
+            const data = await response.json();
+            if (data.error) {
+              recordFailCount++;
+              showStatus(data.error, 'error');
+              addMessage('[录音识别失败]', true);
+              if (recordFailCount >= 3) {
+                showStatus('多次录音识别失败，建议尝试文本输入。', 'error');
+              }
+            } else {
+              recordFailCount = 0;
+              addMessage(data.text || '[录音已发送]', true);
+              addMessage(data.reply, false, data.emotion, data.liwc);
+            }
+          } catch (error) {
+            recordFailCount++;
+            showStatus('录音发送失败: ' + error.message, 'error');
+            if (recordFailCount >= 3) {
+              showStatus('多次录音识别失败，建议尝试文本输入。', 'error');
+            }
+          } finally {
+            toggleLoading(false);
+          }
+        };
+        mediaRecorder.start();
+        isRecording = true;
+        document.getElementById('recordBtn').textContent = '停止录音';
+        document.getElementById('recordBtn').className = 'btn btn-danger';
+        document.getElementById('recordingIndicator').classList.add('active');
+        showStatus('录音已开始', 'success');
+        // 进度条
+        document.getElementById('recordProgress').style.display = 'block';
+        recordSeconds = 0;
+        recordTimer = setInterval(() => {
+          recordSeconds++;
+          let percent = Math.min(100, (recordSeconds / maxRecordSeconds) * 100);
+          document.getElementById('progressBarInner').style.width = percent + '%';
+          if (recordSeconds >= maxRecordSeconds) {
+            stopRecording();
+          }
+        }, 1000);
+      } catch (error) {
+        showStatus('无法访问麦克风: ' + error.message, 'error');
+      }
+    }
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      }
+      isRecording = false;
+      document.getElementById('recordBtn').textContent = '开始录音';
+      document.getElementById('recordBtn').className = 'btn btn-success';
+      document.getElementById('recordingIndicator').classList.remove('active');
+      showStatus('录音已停止，正在识别...', 'success');
+      clearInterval(recordTimer);
+      document.getElementById('progressBarInner').style.width = '0%';
+      document.getElementById('recordProgress').style.display = 'none';
+    }
+
+    // 实时语音识别（伪实时，录音结束后上传）
+    let isRealtimeRecording = false;
+    let realtimeStream = null;
+    let realtimeRecorder = null;
+    let realtimeChunks = [];
+    function toggleRealtimeRecording() {
+      if (isRealtimeRecording) {
+        stopRealtimeRecording();
+      } else {
+        startRealtimeRecording();
+      }
+    }
+    async function startRealtimeRecording() {
+      try {
+        realtimeStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        realtimeRecorder = new MediaRecorder(realtimeStream);
+        realtimeChunks = [];
+        realtimeRecorder.ondataavailable = e => realtimeChunks.push(e.data);
+        realtimeRecorder.onstop = async () => {
+          if (realtimeChunks.length > 0) {
+            const audioBlob = new Blob(realtimeChunks, { type: 'audio/wav' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'realtime.wav');
+            try {
+              const response = await fetch('/chat_audio', {
+                method: 'POST',
+                body: formData
+              });
+              const data = await response.json();
+              if (!data.error) {
+                addMessage(data.text || '[实时语音]', true);
+                addMessage(data.reply, false, data.emotion, data.liwc);
+              }
+            } catch (error) {
+              console.error('实时识别失败:', error);
+            }
+          }
+        };
+        realtimeRecorder.start();
+        isRealtimeRecording = true;
+        document.getElementById('realtimeBtn').textContent = '停止实时识别';
+        document.getElementById('realtimeBtn').className = 'btn btn-danger';
+        document.getElementById('realtimeIndicator').classList.add('active');
+        showStatus('实时识别已开始', 'success');
+      } catch (error) {
+        showStatus('无法访问麦克风: ' + error.message, 'error');
+      }
+    }
+    function stopRealtimeRecording() {
+      if (realtimeRecorder && realtimeRecorder.state !== 'inactive') {
+        realtimeRecorder.stop();
+        realtimeStream.getTracks().forEach(track => track.stop());
+      }
+      isRealtimeRecording = false;
+      document.getElementById('realtimeBtn').textContent = '开始实时识别';
+      document.getElementById('realtimeBtn').className = 'btn btn-success';
+      document.getElementById('realtimeIndicator').classList.remove('active');
+      showStatus('实时识别已停止', 'success');
+    }
+
+    // 状态和加载提示
+    function showStatus(message, type = 'success') {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+      status.style.display = 'block';
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 3000);
+    }
+    function toggleLoading(show) {
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
+    }
+    // 回车发送
+    document.getElementById("user_input").addEventListener("keypress", function(e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    // 聊天历史清空
+    function clearChat() {
+      document.getElementById("chat_log").innerHTML = "";
+      showStatus('聊天记录已清空', 'success');
+    }
+    // Tab键导航和ARIA
+    document.querySelectorAll('textarea, input, button, .chat-container, .input-section, .voice-section').forEach(el => {
+      el.setAttribute('tabindex', '0');
+    });
+    // 页面初始化欢迎语
+    window.addEventListener('load', function() {
+      addMessage('您好！我是您的AI陪伴助手。可以进行文字对话，也支持语音输入。请选择您喜欢的交流方式。', false);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+# Temporary directories
+temp_eldercare/
+temp_remote_repo/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+venv310/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+generation_errors.log
+
+# Audio files
+*.wav
+*.mp3
+
+# Model files (if too large)
+*.pt
+*.pkl
+*.h5
+
+# Database files
+*.db
+*.sqlite
+
+# Environment variables
+.env
+.env.local
+
+# Large data files and obsolete directories
+obsolete/
+LCCC/
+tmp/
+output_batches/

@@ -1,0 +1,13 @@
+flask
+werkzeug
+requests
+python-dotenv
+jieba
+openai
+pyaudio
+baidu-aip
+sentence-transformers
+tinydb
+faiss-cpu
+numpy 
+chardet
