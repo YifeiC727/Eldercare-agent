@@ -18,6 +18,29 @@ def process_text(text, history, emotion_recog, selector, generator):
     emotion = emotion_recog.analyze_emotion_deepseek(text)
     print("情感识别结果:", emotion)
 
+    # 存储数据
+    import csv
+    import datetime
+    import os
+
+    timestamp_str = datetime.datetime.now().isoformat()
+    csv_file = "emotion_trend.csv"
+    fieldnames = ["timestamp", "anger", "sadness", "joy", "intensity"]
+
+    file_exists = os.path.exists(csv_file)
+    with open(csv_file, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow({
+            "timestamp": timestamp_str,
+            "anger": emotion.get("anger", 0),
+            "sadness": emotion.get("sadness", 0),
+            "joy": emotion.get("joy", 0),
+            "intensity": emotion.get("intensity", 0)
+        })
+    print(f"情绪数据已保存到{csv_file}")
+
     # 策略选择
     strategy = selector.select_strategy(
         emotion,

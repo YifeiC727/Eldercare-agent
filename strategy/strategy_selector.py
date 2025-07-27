@@ -1,10 +1,10 @@
 from typing import Dict, List
 import random
 from datetime import datetime
-from RAG_keyword_strategy import RAGKeywordStrategy
-from keyword_memory_manager import KeywordMemoryManager
-from enhanced_entity_recognizer import EnhancedEntityRecognizer
-from performance_config import get_performance_config
+from strategy.RAG_keyword_strategy import RAGKeywordStrategy
+from strategy.keyword_memory_manager import KeywordMemoryManager
+from strategy.enhanced_entity_recognizer import EnhancedEntityRecognizer
+from strategy.performance_config import get_performance_config
 import json
 
 from sentence_transformers import SentenceTransformer, util

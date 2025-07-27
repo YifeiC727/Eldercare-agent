@@ -70,6 +70,7 @@
       }
       textarea, input[type="file"] {
         width: 100%;
+        box-sizing: border-box;
         padding: 14px;
         border: 2px solid #bdbdbd;
         border-radius: 7px;
@@ -153,7 +154,7 @@
         font-weight: bold;
       }
       .clear-btn {
-        float: right;
+        
         background: #f44336;
         color: #fff;
         font-size: 1em;
@@ -161,7 +162,7 @@
         border-radius: 6px;
         border: none;
         cursor: pointer;
-        margin-top: -10px;
+
       }
       .clear-btn:focus {
         outline: 3px solid #d32f2f;
@@ -183,13 +184,25 @@
       }
       .recording-indicator { display: none; }
       .recording-indicator.active { display: inline; color: #f44336; font-weight: bold; margin-left: 10px; }
+
+      .button-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        justify-content: flex-start;
+      }
+
+      .button-row a {
+        text-decoration: none;
+      }
     </style>
 </head>
 <body>
   <div class="container">
     <h2>🤖 AI 陪伴助手 - 智能情感分析</h2>
-    <button class="clear-btn" onclick="clearChat()" aria-label="清空聊天记录">🗑️ 清空聊天</button>
+
     <div class="chat-container" id="chat_log" tabindex="0" aria-label="聊天记录"></div>
+    <div id="button-area"></div>
 
     <!-- 文本输入 -->
     <div class="input-section" tabindex="0">
@@ -491,6 +504,8 @@
     // 聊天历史清空
     function clearChat() {
       document.getElementById("chat_log").innerHTML = "";
+      document.getElementById("user_input").value = "";
+      addMessage('您好！我是您的AI陪伴助手。可以进行文字对话，也支持语音输入。请选择您喜欢的交流方式。', false);
       showStatus('聊天记录已清空', 'success');
     }
     // Tab键导航和ARIA
@@ -500,7 +515,17 @@
     // 页面初始化欢迎语
     window.addEventListener('load', function() {
       addMessage('您好！我是您的AI陪伴助手。可以进行文字对话，也支持语音输入。请选择您喜欢的交流方式。', false);
-    });
+
+      // 添加按钮容器到 #button-area
+      const buttonArea = document.getElementById('button-area');
+      buttonArea.innerHTML = `
+        <div class="button-row">
+          <button class="btn btn-danger" onclick="clearChat()">🗑️ 清空聊天</button>
+          <a href="/trend" class="btn btn-secondary">📈 查看情绪趋势图表</a>
+        </div>
+        `;
+      });
+
   </script>
 </body>
 </html>

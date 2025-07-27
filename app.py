@@ -39,6 +39,27 @@ def chat():
             emotion_intensity = emotion_scores.get("intensity", 0.5)
             liwc_score = emotion_recognizer.liwc_score(user_input)
             liwc_score = {k: float(v) for k, v in liwc_score.items()}
+            
+            # 写入到emotion_trend.csv
+            import csv
+            import datetime
+
+            csv_file = "emotion_trend.csv"
+            fieldnames = ["timestamp", "anger", "sadness", "joy", "intensity"]
+            timestamp_str = datetime.datetime.now().isoformat()
+            file_exists = os.path.exists(csv_file)
+            with open(csv_file, "a", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                if not file_exists:
+                    writer.writeheader()
+                writer.writerow({
+                    "timestamp": timestamp_str,
+                    "anger": emotion_scores.get("anger", 0),
+                    "sadness": emotion_scores.get("sadness", 0),
+                    "joy": emotion_scores.get("joy", 0),
+                    "intensity": emotion_scores.get("intensity", 0)
+                })
+
         except Exception as e:
             print(f"情感分析失败: {e}")
             emotion_scores = {"sadness": 0.2, "joy": 0.6, "anger": 0.1, "intensity": 0.5}
@@ -122,6 +143,27 @@ def chat_audio():
             emotion_intensity = emotion_scores.get("intensity", 0.5) if emotion_scores else 0.5
             liwc_score = emotion_recognizer.liwc_score(text)
             liwc_score = {k: float(v) for k, v in liwc_score.items()}
+
+            #写入到emotion_trend.csv
+            import csv
+            import datetime
+
+            csv_file = "emotion_trend.csv"
+            fieldnames = ["timestamp", "anger", "sadness", "joy", "intensity"]
+            timestamp_str = datetime.datetime.now().isoformat()
+            file_exists = os.path.exists(csv_file)
+            with open(csv_file, "a", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                if not file_exists:
+                    writer.writeheader()
+                writer.writerow({
+                    "timestamp": timestamp_str,
+                    "anger": emotion_scores.get("anger", 0),
+                    "sadness": emotion_scores.get("sadness", 0),
+                    "joy": emotion_scores.get("joy", 0),
+                    "intensity": emotion_scores.get("intensity", 0)
+                })
+
         except Exception as e:
             print(f"情感分析失败: {e}")
             emotion_scores = {"sadness": 0.2, "joy": 0.6, "anger": 0.1, "intensity": 0.5}
@@ -149,6 +191,17 @@ def chat_audio():
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
 
+from visualization.trend_plotter import get_emotion_trend
+from flask import jsonify
+
+@app.route("/trend")
+def trend():
+    return render_template("trend_chart.html")
+
+@app.route("/api/trend_data")
+def trend_data():
+    data = get_emotion_trend()
+    return jsonify(data)
 
 if __name__ == "__main__":
     app.run(debug=True)
