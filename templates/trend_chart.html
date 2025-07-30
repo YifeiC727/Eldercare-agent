@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>情绪长期趋势图</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
+</head>
+<body>
+    <a href="/" style="display: inline-block; padding: 6px 12px; background-color: #007BFF; color: white; border-radius: 4px; text-decoration: none; margin-bottom: 15px;">
+        🔙 返回主页
+    </a>
+    <h2>情绪趋势图</h2>
+    <canvas id="trendChart" width="800" height="400"></canvas>
+    
+    <h2 style="margin-top: 40px;">预警统计表</h2>
+    <div id="warningTableContainer">
+        <table id="warningTable" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="background-color: #f8f9fa;">
+                    <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">日期</th>
+                    <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">关键词预警</th>
+                    <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">早期预警</th>
+                    <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">总预警次数</th>
+                </tr>
+            </thead>
+            <tbody id="warningTableBody">
+                <!-- 预警数据将在这里动态填充 -->
+            </tbody>
+        </table>
+        <p id="noWarningData" style="text-align: center; color: #666; margin-top: 20px; display: none;">
+            暂无预警数据
+        </p>
+    </div>
+
+    <script>
+        fetch('/api/trend_data')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('trendChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,
+                        datasets: [
+                            {
+                                label: '悲伤（sadness）',
+                                data: data.dates.map((t, i) => ({ x: t, y: data.sadness[i] })),
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                fill: false
+                            },
+                            {
+                                label: '喜悦（joy）',
+                                data: data.dates.map((t, i) => ({ x: t, y: data.joy[i] })),
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                fill: false
+                            },
+                            {
+                                label: '愤怒（anger）',
+                                data: data.dates.map((t, i) => ({ x: t, y: data.anger[i] })),
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                fill: false
+                            },
+                            {
+                                label: '情绪强度（intensity）',
+                                data: data.dates.map((t, i) => ({ x: t, y: data.intensity[i] })),
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: '日期'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                max: 1
+                            }
+                        }
+                    }
+                });
+            });
+        
+        // 加载预警数据
+        fetch('/api/warning_data')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('warningTableBody');
+                const noDataMessage = document.getElementById('noWarningData');
+                
+                if (data.warning_data && data.warning_data.length > 0) {
+                    data.warning_data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${row.date}</td>
+                            <td style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #dc3545; font-weight: bold;">${row.keyword_warnings}</td>
+                            <td style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #ffc107; font-weight: bold;">${row.early_warnings}</td>
+                            <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">${row.total}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                } else {
+                    noDataMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('加载预警数据失败:', error);
+                document.getElementById('noWarningData').style.display = 'block';
+            });
+    </script>
+</body>
+</html>

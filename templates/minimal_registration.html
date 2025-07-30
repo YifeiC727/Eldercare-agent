@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎使用智能陪伴助手</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .range-container {
+            position: relative;
+            margin-top: 10px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e1e5e9;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .age-display {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 18px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .welcome-text {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 智能陪伴助手</h1>
+        <p class="welcome-text">
+            欢迎使用我们的智能陪伴系统！为了更好地为您提供个性化服务，请填写以下基本信息。
+        </p>
+        
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="name">您的姓名 *</label>
+                <input type="text" id="name" name="name" required placeholder="请输入您的姓名">
+                <div class="error" id="nameError">请输入您的姓名</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="age">您的年龄 *</label>
+                <div class="range-container">
+                    <input type="range" id="age" name="age" min="50" max="100" value="70">
+                    <div class="age-display" id="ageDisplay">70岁</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="gender">您的性别 *</label>
+                <select id="gender" name="gender" required>
+                    <option value="">请选择性别</option>
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+                </select>
+                <div class="error" id="genderError">请选择您的性别</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">设置密码 *</label>
+                <input type="password" id="password" name="password" required placeholder="请设置登录密码">
+                <div class="error" id="passwordError">请设置密码</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm_password">确认密码 *</label>
+                <input type="password" id="confirm_password" name="confirm_password" required placeholder="请再次输入密码">
+                <div class="error" id="confirmPasswordError">请确认密码</div>
+            </div>
+            
+            <button type="submit">开始聊天</button>
+        </form>
+    </div>
+
+    <script>
+        // 年龄滑块显示
+        const ageSlider = document.getElementById('age');
+        const ageDisplay = document.getElementById('ageDisplay');
+        
+        ageSlider.addEventListener('input', function() {
+            ageDisplay.textContent = this.value + '岁';
+        });
+        
+        // 表单提交
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // 清除之前的错误
+            document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+            
+            // 获取表单数据
+            const formData = {
+                name: document.getElementById('name').value.trim(),
+                age: parseInt(document.getElementById('age').value),
+                gender: document.getElementById('gender').value,
+                password: document.getElementById('password').value,
+                confirm_password: document.getElementById('confirm_password').value
+            };
+            
+            // 验证
+            let hasError = false;
+            
+            if (!formData.name) {
+                document.getElementById('nameError').style.display = 'block';
+                hasError = true;
+            }
+            
+            if (!formData.gender) {
+                document.getElementById('genderError').style.display = 'block';
+                hasError = true;
+            }
+            
+            if (!formData.password) {
+                document.getElementById('passwordError').style.display = 'block';
+                hasError = true;
+            }
+            
+            if (!formData.confirm_password) {
+                document.getElementById('confirmPasswordError').style.display = 'block';
+                hasError = true;
+            }
+            
+            if (formData.password !== formData.confirm_password) {
+                document.getElementById('confirmPasswordError').style.display = 'block';
+                document.getElementById('confirmPasswordError').textContent = '两次输入的密码不一致';
+                hasError = true;
+            }
+            
+            if (hasError) return;
+            
+            // 提交数据
+            try {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // 跳转到聊天页面
+                    window.location.href = '/chat';
+                } else {
+                    alert('注册失败：' + result.error);
+                }
+            } catch (error) {
+                alert('网络错误，请重试');
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html> 
