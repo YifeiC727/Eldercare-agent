@@ -319,7 +319,8 @@ class StrategySelector:
                 "triggered": True,
                 "level": "severe",
                 "reason": f"当前悲伤情绪极高({current_sadness:.2f})",
-                "suggested_action": "立即关注，建议人工介入"
+                "suggested_action": "立即关注，建议人工介入",
+                "recommend_gds": True
             })
             return warning_result
         
@@ -335,7 +336,8 @@ class StrategySelector:
                         "triggered": True,
                         "level": "moderate" if high_sadness_count == 2 else "severe",
                         "reason": f"连续{high_sadness_count}次悲伤情绪>0.8",
-                        "suggested_action": "需要持续关注，建议增加关怀频率"
+                        "suggested_action": "需要持续关注，建议增加关怀频率",
+                        "recommend_gds": True
                     })
                     return warning_result
                 
@@ -351,7 +353,8 @@ class StrategySelector:
                             "triggered": True,
                             "level": "moderate",
                             "reason": f"悲伤情绪显著恶化(近期平均{recent_avg:.2f} vs 历史平均{historical_avg:.2f})",
-                            "suggested_action": "情绪趋势恶化，建议主动关怀"
+                            "suggested_action": "情绪趋势恶化，建议主动关怀",
+                            "recommend_gds": True
                         })
                         return warning_result
             except Exception as e:
@@ -384,7 +387,8 @@ class StrategySelector:
                             "triggered": True,
                             "level": "mild",
                             "reason": f"长期悲伤情绪偏高(平均{recent_avg:.2f})",
-                            "suggested_action": "长期情绪偏低，建议定期关怀"
+                            "suggested_action": "长期情绪偏低，建议定期关怀",
+                            "recommend_gds": True
                         })
                         return warning_result
             except Exception as e:
@@ -400,7 +404,8 @@ class StrategySelector:
                     "triggered": True,
                     "level": "moderate",
                     "reason": "高自我关注+低社交+负面情绪组合",
-                    "suggested_action": "社交退缩倾向，建议鼓励社交活动"
+                    "suggested_action": "社交退缩倾向，建议鼓励社交活动",
+                    "recommend_gds": True
                 })
                 return warning_result
         
@@ -422,7 +427,8 @@ class StrategySelector:
                 "keywords": found_keywords,
                 "level": "critical",
                 "reason": f"检测到危险关键词: {', '.join(found_keywords)}",
-                "suggested_action": "立即人工介入，建议联系专业心理危机干预"
+                "suggested_action": "立即人工介入，建议联系专业心理危机干预",
+                "recommend_gds": True
             }
         
         return {"triggered": False, "keywords": [], "level": "normal"}

@@ -375,5 +375,31 @@
       "intensity": 0.95
     },
     "timestamp": "2025-07-30T14:34:51.966828"
+  },
+  {
+    "_id": "6892161361a180eb75f93bda",
+    "user_id": "6891b66147d31f2e16f2592c",
+    "user_message": "你好",
+    "ai_reply": "抱歉，我现在无法连接到AI服务。请稍后再试。",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.0,
+      "intensity": 0.0
+    },
+    "timestamp": "2025-08-05T22:32:51.138384"
+  },
+  {
+    "_id": "68921c7561a180eb75f93bdb",
+    "user_id": "6891b66147d31f2e16f2592c",
+    "user_message": "我今天心情不好",
+    "ai_reply": "抱歉，我现在无法连接到AI服务。请稍后再试。",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.0,
+      "intensity": 0.0
+    },
+    "timestamp": "2025-08-05T23:00:05.663389"
   }
 ]

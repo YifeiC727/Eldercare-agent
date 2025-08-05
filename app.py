@@ -1,10 +1,12 @@
-from flask import Flask, render_template, request, jsonify, session, redirect
+from flask import Flask, render_template, request, jsonify, url_for, session, redirect
 from strategy.llm_generator import LLMGenerator
 from strategy.strategy_selector import StrategySelector
 from user_bio.user_info_manager import UserInfoManager
+from bson import ObjectId
 import secrets
 import os
 import time
+import csv
 from werkzeug.utils import secure_filename
 from speech.baidu_speech_recognizer import BaiduSpeechRecognizer
 from emotion_detection.emotion_recognizer import EmotionRecognizer
@@ -276,6 +278,10 @@ def chat():
         if next_question:
             reply = user_info_manager.integrate_question_naturally(reply, next_question, user_input)
         
+        # 建议特殊情况下填写问卷
+        if strategy.get("recommend_gds", False):
+            reply +- "\n📝 建议你填写一个简短的自评问卷（GDS），这有助于我们更好地了解你的情绪状态。"
+
         # 保存对话到数据库
         user_info_manager.save_conversation(user_id, user_input, reply, emotion_scores)
         
@@ -578,5 +584,59 @@ def user_bio_page():
     
     return render_template("user_bio.html", user_id=user_id)
 
+@app.route("/questionnaire", methods=["GET", "POST"])
+def questionnaire():
+    if request.method == "POST":
+        answers = request.form.to_dict()
+
+        # 如果有人没填完会报错
+        if len(answers) < 15 or any(v == '' for v in answers.values()):
+            return render_template("questionnaire.html", error_message="⚠️ 请回答完所有题目再提交哦～")
+        
+        score = sum(int(value) for value in answers.values())
+
+        # 假设你已经登录并有 user_id 存在 session 中
+        user_id = session.get('user_id', 'anonymous')
+
+        # 保存到 session，方便跳转后使用
+        session['gds_answers'] = answers
+        session['gds_score'] = score
+        session['gds_user'] = user_id
+
+        return redirect(url_for('gds_result'))
+    
+    return render_template("questionnaire.html")
+
+@app.route("/gds_result")
+def gds_result():
+    score = session.get("gds_score", 0)
+    answers = session.get("gds_answers", {})
+    user_id = session.get("gds_user", "anonymous")
+
+    # 保存结果
+    file_path = 'user_bio/data/gds_results.csv'
+    file_exists = os.path.isfile(file_path)
+
+    with open(file_path, mode='a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+
+        if not file_exists:
+            header = ['username'] + [f'q{i}' for i in range(1, 16)] + ['score']
+            writer.writerow(header)
+
+        row = [user_id] + [answers.get(f'q{i}', '') for i in range(1, 16)] + [score]
+        writer.writerow(row)
+
+    # 根据得分生成文字描述
+    score = int(score)
+    if score <= 4:
+        description = "状态良好 😊"
+    elif score <= 8:
+        description = "有轻度抑郁倾向 😐"
+    else:
+        description = "可能存在明显抑郁，建议进一步评估 😟"
+
+    return render_template("gds_result.html", score=score, description=description)
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5001) 
+    app.run(debug=True, port=5001)
