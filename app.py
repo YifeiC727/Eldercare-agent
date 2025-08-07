@@ -7,6 +7,7 @@ import secrets
 import os
 import time
 import csv
+import numpy as np
 from werkzeug.utils import secure_filename
 from speech.baidu_speech_recognizer import BaiduSpeechRecognizer
 from emotion_detection.emotion_recognizer import EmotionRecognizer
@@ -26,6 +27,128 @@ selector = StrategySelector()
 speech_recognizer = BaiduSpeechRecognizer()
 emotion_recognizer = EmotionRecognizer()
 user_info_manager = UserInfoManager()
+
+# 延迟初始化的tone_emotion分析器
+tone_analyzer = None
+
+def get_tone_analyzer():
+    """延迟初始化tone_emotion分析器"""
+    global tone_analyzer
+    if tone_analyzer is None:
+        try:
+            from emotion_detection.tone_emotion import VoiceEmotionAnalyzer
+            tone_analyzer = VoiceEmotionAnalyzer()
+            tone_analyzer.train_with_demo_data()
+            print("✅ Tone emotion analyzer initialized successfully")
+        except Exception as e:
+            print(f"❌ Failed to initialize tone emotion analyzer: {e}")
+            tone_analyzer = None
+    return tone_analyzer
+
+def get_dynamic_weights(text_length: int, audio_quality: float = 0.5, emotion_type: str = None):
+    """
+    根据具体情况动态调整权重
+    
+    Args:
+        text_length: 文本长度
+        audio_quality: 音频质量评分 (0-1)，默认0.5
+        emotion_type: 情绪类型（可选）
+    """
+    base_text_weight = 0.7
+    base_tone_weight = 0.3
+    
+    # 根据文本长度调整
+    if text_length < 10:  # 短文本，增加音调权重
+        text_weight = base_text_weight - 0.2
+        tone_weight = base_tone_weight + 0.2
+    elif text_length > 50:  # 长文本，增加文本权重
+        text_weight = base_text_weight + 0.1
+        tone_weight = base_tone_weight - 0.1
+    else:
+        text_weight = base_text_weight
+        tone_weight = base_tone_weight
+    
+    # 根据音频质量调整
+    if audio_quality < 0.5:  # 低质量音频，增加文本权重
+        text_weight += 0.1
+        tone_weight -= 0.1
+    elif audio_quality > 0.8:  # 高质量音频，增加音调权重
+        text_weight -= 0.1
+        tone_weight += 0.1
+    
+    # 根据情绪类型调整
+    if emotion_type in ['anger', 'excitement']:  # 音调明显的情绪
+        text_weight -= 0.1
+        tone_weight += 0.1
+    
+    # 确保权重在合理范围内
+    text_weight = max(0.1, min(0.9, text_weight))
+    tone_weight = max(0.1, min(0.9, tone_weight))
+    
+    return text_weight, tone_weight
+
+def combine_emotions(text_emotion: dict, tone_emotion: dict, text_weight: float, tone_weight: float) -> dict:
+    """
+    结合文本情绪和音调情绪
+    
+    Args:
+        text_emotion: 文本情绪分析结果
+        tone_emotion: 音调情绪分析结果
+        text_weight: 文本情绪权重
+        tone_weight: 音调情绪权重
+    
+    Returns:
+        结合后的情绪结果
+    """
+    if not tone_emotion:
+        return text_emotion
+    
+    combined = {}
+    for key in ["joy", "sadness", "anger", "intensity"]:
+        text_val = text_emotion.get(key, 0.0)
+        tone_val = tone_emotion.get(key, 0.0)
+        
+        # 加权平均
+        combined[key] = (text_val * text_weight + tone_val * tone_weight) / (text_weight + tone_weight)
+        combined[key] = max(0.0, min(1.0, combined[key]))
+    
+    return combined
+
+def estimate_audio_quality(audio_path: str) -> float:
+    """
+    估算音频质量评分 (0-1)
+    
+    Args:
+        audio_path: 音频文件路径
+    
+    Returns:
+        音频质量评分
+    """
+    try:
+        import librosa
+        audio_data, sr = librosa.load(audio_path, sr=16000)
+        
+        # 计算音频质量指标
+        # 1. 信噪比（简化版）
+        rms = np.sqrt(np.mean(np.square(audio_data)))
+        snr_score = min(1.0, rms * 10)  # 简化的信噪比评分
+        
+        # 2. 音频长度
+        duration = len(audio_data) / sr
+        duration_score = min(1.0, duration / 10)  # 10秒为满分
+        
+        # 3. 频谱能量分布
+        spectral_centroid = librosa.feature.spectral_centroid(y=audio_data, sr=sr).mean()
+        spectral_score = min(1.0, spectral_centroid / 2000)  # 2000Hz为满分
+        
+        # 综合评分
+        quality_score = (snr_score * 0.4 + duration_score * 0.3 + spectral_score * 0.3)
+        
+        return max(0.1, min(1.0, quality_score))
+        
+    except Exception as e:
+        print(f"音频质量评估失败: {e}")
+        return 0.5  # 默认中等质量
 
 # 用户情绪历史数据存储 (内存中，生产环境建议使用数据库)
 user_emotion_history = {}
@@ -280,7 +403,7 @@ def chat():
         
         # 建议特殊情况下填写问卷
         if strategy.get("recommend_gds", False):
-            reply +- "\n📝 建议你填写一个简短的自评问卷（GDS），这有助于我们更好地了解你的情绪状态。"
+            reply += "\n📝 建议你填写一个简短的自评问卷（GDS），这有助于我们更好地了解你的情绪状态。"
 
         # 保存对话到数据库
         user_info_manager.save_conversation(user_id, user_input, reply, emotion_scores)
@@ -362,10 +485,48 @@ def chat_audio():
                 'reply': '抱歉，我没有听清楚您说的话，请您重新说一遍。'
             }), 200
         
-        # 情感识别
+        # ===== 新增：音调情绪分析 =====
+        tone_emotion_result = None
         try:
-            emotion_scores = emotion_recognizer.analyze_emotion_deepseek(text)
-            emotion_intensity = emotion_scores.get("intensity", 0.5) if emotion_scores else 0.5
+            analyzer = get_tone_analyzer()  # 延迟初始化
+            if analyzer:
+                tone_emotion_result = analyzer.analyze_audio_file(temp_path)
+                print(f"🎵 音调情绪分析结果: {tone_emotion_result}")
+            else:
+                print("⚠️ Tone emotion analyzer not available")
+        except Exception as e:
+            print(f"❌ 音调情绪分析失败: {e}")
+            tone_emotion_result = None
+        
+        # ===== 文本情绪分析 =====
+        try:
+            text_emotion = emotion_recognizer.analyze_emotion_deepseek(text)
+            print(f"📝 文本情绪分析结果: {text_emotion}")
+            
+            # ===== 动态权重计算 =====
+            text_length = len(text)
+            audio_quality = estimate_audio_quality(temp_path)
+            
+            # 根据文本情绪判断情绪类型
+            emotion_type = None
+            if text_emotion.get("anger", 0) > 0.6:
+                emotion_type = "anger"
+            elif text_emotion.get("joy", 0) > 0.6:
+                emotion_type = "excitement"
+            
+            text_weight, tone_weight = get_dynamic_weights(text_length, audio_quality, emotion_type)
+            print(f"⚖️ 动态权重 - 文本: {text_weight:.2f}, 音调: {tone_weight:.2f}")
+            
+            # ===== 结合文本和音调情绪 =====
+            if tone_emotion_result:
+                combined_emotion = combine_emotions(text_emotion, tone_emotion_result, text_weight, tone_weight)
+                emotion_scores = combined_emotion
+                print(f"🎯 结合后情绪结果: {emotion_scores}")
+            else:
+                emotion_scores = text_emotion
+                print(f"📝 仅使用文本情绪: {emotion_scores}")
+            
+            emotion_intensity = emotion_scores.get("intensity", 0.5)
             liwc_score = emotion_recognizer.liwc_score(text)
             liwc_score = {k: float(v) for k, v in liwc_score.items()}
             
@@ -375,7 +536,7 @@ def chat_audio():
                 user_info_manager.save_emotion_data(user_id, emotion_scores)
             
         except Exception as e:
-            print(f"情感分析失败: {e}")
+            print(f"❌ 情感分析失败: {e}")
             emotion_scores = {"sadness": 0.2, "joy": 0.6, "anger": 0.1, "intensity": 0.5}
             emotion_intensity = 0.5
             liwc_score = {}
@@ -427,6 +588,14 @@ def chat_audio():
             'reply': reply,
             'emotion': emotion_scores,
             'liwc': liwc_score,
+            'tone_emotion': tone_emotion_result,  # 新增：音调情绪结果
+            'text_emotion': text_emotion,  # 新增：原始文本情绪
+            'weights': {  # 新增：使用的权重信息
+                'text_weight': text_weight,
+                'tone_weight': tone_weight,
+                'audio_quality': audio_quality,
+                'text_length': text_length
+            },
             'next_question': next_question
         })
         
