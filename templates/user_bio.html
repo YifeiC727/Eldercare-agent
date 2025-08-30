@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - ElderCare Companion</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+        
+        .info-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+            min-height: 24px;
+        }
+        
+        .empty-value {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .edit-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+        
+        .edit-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+        
+        .edit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .progress-section {
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            background: #e1e5e9;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .question-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .status-answered {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-asked {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-not-asked {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #e74c3c;
+        }
+        
+        /* Edit mode styles */
+        .edit-mode {
+            background: #fff;
+            border: 2px solid #667eea;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+        }
+        
+        .edit-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        
+        .edit-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .edit-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .save-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        
+        .save-btn:hover {
+            background: #218838;
+        }
+        
+        .cancel-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        
+        .cancel-btn:hover {
+            background: #5a6268;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+            box-sizing: border-box;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                padding: 20px;
+            }
+        }
+        
+        /* Success message */
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .success-message.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="back-btn">← Return to Chat</a>
+            <h1>Personal Information</h1>
+        </div>
+        
+        <div class="content" id="content">
+            <div class="loading">Loading personal information...</div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Edit Information</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="form-group">
+                        <label class="form-label" id="formLabel">Information</label>
+                        <input type="text" class="form-input" id="formInput" placeholder="Please enter information">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveModalEdit()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success message -->
+    <div id="successMessage" class="success-message">
+        <span id="successText">Save successfully!</span>
+    </div>
+
+    <script>
+        const userId = '{{ user_id }}';
+        let currentUser = null;
+        let editingField = null;
+        
+        async function loadUserInfo() {
+            try {
+                const response = await fetch(`/api/users/${userId}/bio`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    currentUser = result.user;
+                    displayUserInfo(currentUser);
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Load failed, please try again');
+                console.error('Error:', error);
+            }
+        }
+        
+        function displayUserInfo(user) {
+            const content = document.getElementById('content');
+            
+            // Calculate information completeness
+            const totalFields = 8; // Basic info 3 + Other info 5
+            let completedFields = 0;
+            
+            // Basic information
+            if (user.basic_info?.name) completedFields++;
+            if (user.basic_info?.age) completedFields++;
+            if (user.basic_info?.gender) completedFields++;
+            
+            // Other information
+            if (user.family_relation?.children_count) completedFields++;
+            if (user.family_relation?.spouse_status) completedFields++;
+            if (user.family_relation?.living_alone) completedFields++;
+            if (user.living_habits?.hobbies) completedFields++;
+            if (user.living_habits?.health_status) completedFields++;
+            
+            const completionRate = Math.round((completedFields / totalFields) * 100);
+            
+            content.innerHTML = `
+                <div class="progress-section">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${completionRate}%"></div>
+                    </div>
+                    <div class="progress-text">Information completeness: ${completionRate}%</div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Basic Information</div>
+                    <div class="info-grid">
+                        <div class="info-item" data-field="basic_info.name" data-type="text">
+                            <div class="info-label">Name</div>
+                            <div class="info-value" id="basic_info.name">${user.basic_info?.name || '<span class="empty-value">Not filled</span>'}</div>
+                            <button class="edit-btn" onclick="editField('basic_info.name', 'Name', 'text', '${user.basic_info?.name || ''}')">Edit</button>
+                        </div>
+                        <div class="info-item" data-field="basic_info.age" data-type="number">
+                            <div class="info-label">Age</div>
+                            <div class="info-value" id="basic_info.age">${user.basic_info?.age ? user.basic_info.age + ' years old' : '<span class="empty-value">Not filled</span>'}</div>
+                            <button class="edit-btn" onclick="editField('basic_info.age', 'Age', 'number', '${user.basic_info?.age || ''}')">Edit</button>
+                        </div>
+                        <div class="info-item" data-field="basic_info.gender" data-type="select">
+                            <div class="info-label">Gender</div>
+                            <div class="info-value" id="basic_info.gender">${user.basic_info?.gender || '<span class="empty-value">Not filled</span>'}</div>
+                            <button class="edit-btn" onclick="editField('basic_info.gender', 'Gender', 'select', '${user.basic_info?.gender || ''}')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Family Relations</div>
+                    <div class="info-grid">
+                        <div class="info-item" data-field="family_relation.children_count" data-type="number">
+                            <div class="info-label">Number of Children</div>
+                            <div class="info-value" id="family_relation.children_count">
+                                ${user.family_relation?.children_count ? user.family_relation.children_count + ' children' : '<span class="empty-value">Not filled</span>'}
+                                ${getQuestionStatus(user.question_status?.children_count)}
+                            </div>
+                            <button class="edit-btn" onclick="editField('family_relation.children_count', 'Number of Children', 'number', '${user.family_relation?.children_count || ''}')">Edit</button>
+                        </div>
+                        <div class="info-item" data-field="family_relation.spouse_status" data-type="select">
+                            <div class="info-label">Spouse Status</div>
+                            <div class="info-value" id="family_relation.spouse_status">
+                                ${user.family_relation?.spouse_status || '<span class="empty-value">Not filled</span>'}
+                                ${getQuestionStatus(user.question_status?.spouse_status)}
+                            </div>
+                            <button class="edit-btn" onclick="editField('family_relation.spouse_status', 'Spouse Status', 'select', '${user.family_relation?.spouse_status || ''}')">Edit</button>
+                        </div>
+                        <div class="info-item" data-field="family_relation.living_alone" data-type="select">
+                            <div class="info-label">Living Situation</div>
+                            <div class="info-value" id="family_relation.living_alone">
+                                ${user.family_relation?.living_alone || '<span class="empty-value">Not filled</span>'}
+                                ${getQuestionStatus(user.question_status?.living_alone)}
+                            </div>
+                            <button class="edit-btn" onclick="editField('family_relation.living_alone', 'Living Situation', 'select', '${user.family_relation?.living_alone || ''}')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Living Habits</div>
+                    <div class="info-grid">
+                        <div class="info-item" data-field="living_habits.hobbies" data-type="text">
+                            <div class="info-label">Hobbies & Interests</div>
+                            <div class="info-value" id="living_habits.hobbies">
+                                ${user.living_habits?.hobbies || '<span class="empty-value">Not filled</span>'}
+                                ${getQuestionStatus(user.question_status?.hobbies)}
+                            </div>
+                            <button class="edit-btn" onclick="editField('living_habits.hobbies', 'Hobbies & Interests', 'text', '${user.living_habits?.hobbies || ''}')">Edit</button>
+                        </div>
+                        <div class="info-item" data-field="living_habits.health_status" data-type="text">
+                            <div class="info-label">Health Status</div>
+                            <div class="info-value" id="living_habits.health_status">
+                                ${user.living_habits?.health_status || '<span class="empty-value">Not filled</span>'}
+                                ${getQuestionStatus(user.question_status?.health_status)}
+                            </div>
+                            <button class="edit-btn" onclick="editField('living_habits.health_status', 'Health Status', 'text', '${user.living_habits?.health_status || ''}')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Usage Statistics</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Conversation Count</div>
+                            <div class="info-value">${user.conversation_count || 0} times</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Registration Date</div>
+                            <div class="info-value">${formatDate(user.created_at)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getQuestionStatus(status) {
+            if (!status) return '<span class="question-status status-not-asked">Not Asked</span>';
+            
+            switch (status) {
+                case 'answered':
+                    return '<span class="question-status status-answered">Answered</span>';
+                case 'asked':
+                    return '<span class="question-status status-asked">Asked</span>';
+                default:
+                    return '<span class="question-status status-not-asked">Not Asked</span>';
+            }
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US');
+        }
+        
+        function showError(message) {
+            document.getElementById('content').innerHTML = `
+                <div class="error">${message}</div>
+            `;
+        }
+        
+        // Edit functionality
+        function editField(field, label, type, currentValue) {
+            editingField = field;
+            
+            document.getElementById('modalTitle').textContent = `Edit ${label}`;
+            document.getElementById('formLabel').textContent = label;
+            
+            const formInput = document.getElementById('formInput');
+            formInput.value = currentValue;
+            formInput.type = type;
+            
+            // If it's a select type, create dropdown options
+            if (type === 'select') {
+                const select = document.createElement('select');
+                select.className = 'form-input';
+                select.id = 'formInput';
+                
+                let options = [];
+                if (field === 'basic_info.gender') {
+                    options = ['Male', 'Female'];
+                } else if (field === 'family_relation.spouse_status') {
+                    options = ['Married', 'Divorced', 'Widowed', 'Single'];
+                } else if (field === 'family_relation.living_alone') {
+                    options = ['Living alone', 'Living with spouse', 'Living with children', 'Living with family'];
+                }
+                
+                options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option;
+                    optionElement.textContent = option;
+                    if (option === currentValue) {
+                        optionElement.selected = true;
+                    }
+                    select.appendChild(optionElement);
+                });
+                
+                formInput.parentNode.replaceChild(select, formInput);
+            } else {
+                // Ensure it's an input type
+                if (formInput.tagName === 'SELECT') {
+                    const input = document.createElement('input');
+                    input.className = 'form-input';
+                    input.id = 'formInput';
+                    input.type = type;
+                    input.value = currentValue;
+                    formInput.parentNode.replaceChild(input, formInput);
+                }
+            }
+            
+            document.getElementById('editModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editingField = null;
+        }
+        
+        async function saveModalEdit() {
+            if (!editingField) return;
+            
+            const formInput = document.getElementById('formInput');
+            const newValue = formInput.value.trim();
+            
+            if (!newValue) {
+                alert('Please enter valid information');
+                return;
+            }
+            
+            try {
+                // Update local display
+                const valueElement = document.getElementById(editingField);
+                if (valueElement) {
+                    if (editingField === 'basic_info.age') {
+                        valueElement.textContent = newValue + ' years old';
+                    } else if (editingField === 'family_relation.children_count') {
+                        valueElement.innerHTML = newValue + ' children' + getQuestionStatus('answered');
+                    } else {
+                        valueElement.innerHTML = newValue + getQuestionStatus('answered');
+                    }
+                }
+                
+                // Send to server
+                const response = await fetch(`/api/users/${userId}/info`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        field: editingField,
+                        value: newValue
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Information updated successfully!');
+                    closeModal();
+                    // Reload user information to ensure data synchronization
+                    await loadUserInfo();
+                } else {
+                    alert('Update failed: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Update failed, please try again');
+            }
+        }
+        
+        function showSuccess(message) {
+            const successMessage = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
+            successText.textContent = message;
+            successMessage.classList.add('show');
+            
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+        
+        // Load user information when page loads
+        loadUserInfo();
+    </script>
+</body>
+</html> 

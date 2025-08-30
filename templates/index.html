@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ElderCare Companion - Emotion Support</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+      body {
+        font-family: 'Microsoft YaHei', Arial, sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+        font-size: 20px;
+      }
+      .container {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+      h2 {
+        color: #2c3e50;
+        margin: 0;
+        font-size: 2.2em;
+      }
+      .user-bio-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+        transition: transform 0.2s;
+      }
+      .user-bio-btn:hover {
+        transform: translateY(-2px);
+      }
+      .chat-container {
+        border: 2px solid #2196f3;
+        border-radius: 10px;
+        height: 420px;
+        overflow-y: scroll;
+        padding: 18px;
+        margin-bottom: 20px;
+        background-color: #fafafa;
+        font-size: 1.1em;
+      }
+      .message {
+        margin-bottom: 18px;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 1.1em;
+      }
+      .user-message {
+        background-color: #e3f2fd;
+        border-left: 6px solid #2196f3;
+      }
+      .ai-message {
+        background-color: #f3e5f5;
+        border-left: 6px solid #9c27b0;
+      }
+      .emotion-info {
+        font-size: 15px;
+        color: #444;
+        margin-top: 7px;
+        padding: 7px;
+        background-color: #fff3cd;
+        border-radius: 4px;
+      }
+      .input-section, .voice-section {
+        margin-bottom: 24px;
+        border: 2px dashed #bdbdbd;
+        border-radius: 10px;
+        background: #f7faff;
+        padding: 18px 18px 10px 18px;
+      }
+      .input-section:focus-within, .voice-section:focus-within {
+        border-color: #2196f3;
+        box-shadow: 0 0 0 2px #90caf9;
+      }
+      textarea, input[type="file"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 14px;
+        border: 2px solid #bdbdbd;
+        border-radius: 7px;
+        resize: vertical;
+        font-family: inherit;
+        font-size: 1.1em;
+        outline: none;
+        margin-bottom: 10px;
+      }
+      textarea:focus, input[type="file"]:focus {
+        border-color: #2196f3;
+        box-shadow: 0 0 0 2px #90caf9;
+      }
+      .btn {
+        background-color: #2196f3;
+        color: white;
+        border: none;
+        padding: 18px 32px;
+        border-radius: 7px;
+        cursor: pointer;
+        margin: 8px 8px 8px 0;
+        font-size: 1.1em;
+        display: inline-flex;
+        align-items: center;
+        transition: background 0.2s;
+      }
+      .btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #90caf9;
+      }
+      
+      .question-prompt {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        animation: slideIn 0.3s ease;
+      }
+      
+      .question-content p {
+        margin: 0 0 15px 0;
+        color: #856404;
+        font-size: 16px;
+      }
+      
+      .question-actions {
+        display: flex;
+        gap: 10px;
+      }
+      
+      .btn-primary {
+        background-color: #007bff;
+      }
+      
+      .btn-secondary {
+        background-color: #6c757d;
+      }
+      
+            @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .btn svg {
+        margin-right: 8px;
+      }
+      .btn:hover {
+        background-color: #1976d2;
+      }
+      .btn-danger {
+        background-color: #f44336;
+      }
+      .btn-danger:hover {
+        background-color: #d32f2f;
+      }
+      .btn-success {
+        background-color: #4caf50;
+      }
+      .btn-success:hover {
+        background-color: #388e3c;
+      }
+      .file-input {
+        margin: 10px 0;
+      }
+      .status {
+        margin-top: 16px;
+        padding: 16px;
+        border-radius: 6px;
+        font-size: 1.1em;
+        display: none;
+        text-align: center;
+      }
+      .status.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 2px solid #c3e6cb;
+      }
+      .status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 2px solid #f5c6cb;
+      }
+      .loading {
+        display: none;
+        text-align: center;
+        color: #1976d2;
+        margin: 16px 0;
+        font-size: 1.2em;
+      }
+      .section-title {
+        font-size: 1.2em;
+        color: #1976d2;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+      .clear-btn {
+        
+        background: #f44336;
+        color: #fff;
+        font-size: 1em;
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+
+      }
+      .clear-btn:focus {
+        outline: 3px solid #d32f2f;
+      }
+      .progress-bar {
+        width: 100%;
+        height: 18px;
+        background: #e0e0e0;
+        border-radius: 8px;
+        margin: 10px 0 0 0;
+        overflow: hidden;
+        display: none;
+      }
+      .progress-bar-inner {
+        height: 100%;
+        background: #2196f3;
+        width: 0%;
+        transition: width 0.2s;
+      }
+      .recording-indicator { display: none; }
+      .recording-indicator.active { display: inline; color: #f44336; font-weight: bold; margin-left: 10px; }
+
+      .button-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        justify-content: flex-start;
+      }
+
+      .button-row a {
+        text-decoration: none;
+      }
+    </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>ElderCare Companion</h2>
+      <a href="/user_bio" class="user-bio-btn">Profile</a>
+    </div>
+
+    <div class="chat-container" id="chat_log" tabindex="0" aria-label="Conversation log"></div>
+    <div id="button-area"></div>
+
+                <!-- Text input -->
+    <div class="input-section" tabindex="0">
+      <div class="section-title">Text Chat</div>
+      <p style="font-size:18px;color:#888;">Type your message below. Click "Send" or press Enter to submit.</p>
+      <textarea id="user_input" rows="3" placeholder="Type your message..." aria-label="Text input"></textarea>
+      <button class="btn" onclick="sendMessage()" aria-label="Send message">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M2 21l21-9-21-9v7l15 2-15 2z"/></svg>
+        Send
+      </button>
+    </div>
+
+                <!-- Voice input method 1: File upload -->
+    <div class="voice-section" tabindex="0">
+      <div class="section-title">Audio Input: Upload File</div>
+      <p style="font-size:18px;color:#888;">Supported formats: WAV, PCM, AMR, M4A (max 10MB). Choose a file and click "Upload & Transcribe".</p>
+      <input type="file" id="audio_file" accept="audio/*" class="file-input" aria-label="Upload audio file">
+      <button class="btn" onclick="sendAudioFile()" aria-label="Upload and transcribe">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M5 20h14v-2H5m14-9h-4V3H9v6H5l7 7 7-7z"/></svg>
+        Upload & Transcribe
+      </button>
+    </div>
+
+                <!-- Voice input method 2: Browser recording -->
+    <div class="voice-section" tabindex="0">
+      <div class="section-title">Audio Input: Record in Browser</div>
+      <p style="font-size:18px;color:#888;">Click to start recording. Click again to stop and transcribe. Progress will be shown during recording.</p>
+      <button class="btn btn-success" id="recordBtn" onclick="toggleRecording()" aria-label="Start recording">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3m5-3a1 1 0 0 1 2 0c0 3.87-3.13 7-7 7s-7-3.13-7-7a1 1 0 0 1 2 0c0 2.76 2.24 5 5 5s5-2.24 5-5M19 19v2H5v-2h14z"/></svg>
+        Start Recording
+      </button>
+      <span class="recording-indicator" id="recordingIndicator">Recording...</span>
+      <div class="progress-bar" id="recordProgress"><div class="progress-bar-inner" id="progressBarInner"></div></div>
+    </div>
+
+                <!-- Voice input method 3: Real-time speech recognition -->
+    <div class="voice-section" tabindex="0">
+      <div class="section-title">Audio Input: Real-time Recognition</div>
+      <p style="font-size:18px;color:#888;">Click to start real-time recognition for continuous conversations. Click again to stop.</p>
+      <button class="btn btn-success" id="realtimeBtn" onclick="toggleRealtimeRecording()" aria-label="Start real-time recognition">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-14a6 6 0 1 1 0 12A6 6 0 0 1 12 6z"/></svg>
+        Start Real-time
+      </button>
+      <span class="recording-indicator" id="realtimeIndicator">Recognizing...</span>
+    </div>
+
+    <div class="status" id="status"></div>
+    <div class="loading" id="loading">Processing...</div>
+  </div>
+  <script>
+            // Append chat messages to page
+    function addMessage(content, isUser = true, emotionData = null, liwcData = null) {
+      const chatLog = document.getElementById("chat_log");
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+      let html = `<strong>${isUser ? 'You' : 'Assistant'}:</strong> ${content}`;
+      if (emotionData && !isUser) {
+        html += `<div class=\"emotion-info\">\n          <strong>Emotion Analysis:</strong> \n          Anger: ${(emotionData.anger * 100).toFixed(1)}% | \n          Sadness: ${(emotionData.sadness * 100).toFixed(1)}% | \n          Joy: ${(emotionData.joy * 100).toFixed(1)}% | \n          Intensity: ${(emotionData.intensity * 100).toFixed(1)}%\n        </div>`;
+      }
+      if (liwcData && !isUser && Object.keys(liwcData).length > 0) {
+        html += `<div class=\"emotion-info\"><strong>LIWC:</strong> ` +
+          Object.entries(liwcData).map(([k, v]) => `${k}: ${(v * 100).toFixed(1)}%`).join(' | ') +
+          `</div>`;
+      }
+      messageDiv.innerHTML = html;
+      chatLog.appendChild(messageDiv);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+            // Text conversation
+    async function sendMessage() {
+      const userMessage = document.getElementById("user_input").value.trim();
+      if (!userMessage) return;
+      addMessage(userMessage, true);
+      document.getElementById("user_input").value = "";
+      toggleLoading(true);
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userMessage })
+        });
+        const data = await response.json();
+        if (data.error) {
+          showStatus(data.error, 'error');
+        } else {
+          addMessage(data.reply, false, data.emotion, data.liwc);
+          
+          // Check if warning popup is needed
+          if (data.show_alert && data.alert_message) {
+            showWarningModal('Alert', data.alert_message);
+          }
+          
+          // Check if questions need to be answered
+          if (data.next_question) {
+            handleQuestion(data.next_question);
+          }
+        }
+      } catch (error) {
+        showStatus('Failed to send: ' + error.message, 'error');
+      } finally {
+        toggleLoading(false);
+      }
+    }
+    
+    // Handle AI inquiry questions
+    let currentQuestion = null;
+    
+    function handleQuestion(question) {
+      currentQuestion = question;
+      
+      // Create question prompt box
+      const questionDiv = document.createElement('div');
+      questionDiv.className = 'question-prompt';
+      questionDiv.innerHTML = `
+        <div class="question-content">
+          <p><strong>${question.text}</strong></p>
+          <div class="question-actions">
+            <button onclick="answerQuestion('${question.key}')" class="btn btn-primary">Answer</button>
+            <button onclick="skipQuestion()" class="btn btn-secondary">Skip</button>
+          </div>
+        </div>
+      `;
+      
+      // Add to chat area
+      const chatLog = document.getElementById('chat_log');
+      chatLog.appendChild(questionDiv);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+    
+    function answerQuestion(questionKey) {
+      if (!currentQuestion) return;
+      
+      // Remove question prompt box
+      const questionPrompt = document.querySelector('.question-prompt');
+      if (questionPrompt) {
+        questionPrompt.remove();
+      }
+      
+      // Mark current input box for answering questions
+      const inputBox = document.getElementById('user_input');
+      inputBox.placeholder = `Please answer: ${currentQuestion.text}`;
+      inputBox.dataset.answeringQuestion = questionKey;
+      
+      // Modify send button behavior
+      const sendBtn = document.querySelector('button[onclick="sendMessage()"]');
+      sendBtn.textContent = 'Submit';
+      sendBtn.onclick = submitAnswer;
+      
+      currentQuestion = null;
+    }
+    
+    function skipQuestion() {
+      // Remove question prompt box
+      const questionPrompt = document.querySelector('.question-prompt');
+      if (questionPrompt) {
+        questionPrompt.remove();
+      }
+      
+      // Reset input box
+      const inputBox = document.getElementById('user_input');
+      inputBox.placeholder = 'Type your message...';
+      delete inputBox.dataset.answeringQuestion;
+      
+      // Reset send button
+      const sendBtn = document.querySelector('button[onclick="submitAnswer()"]');
+      if (sendBtn) {
+        sendBtn.textContent = 'Send';
+        sendBtn.onclick = sendMessage;
+      }
+      
+      currentQuestion = null;
+    }
+    
+    async function submitAnswer() {
+      const inputBox = document.getElementById('user_input');
+      const answer = inputBox.value.trim();
+      const questionKey = inputBox.dataset.answeringQuestion;
+      
+      if (!answer || !questionKey) return;
+      
+      // Send answer to server
+      try {
+        const response = await fetch(`/api/users/${getUserId()}/info`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question_key: questionKey,
+            answer: answer
+          })
+        });
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+          showStatus('Saved', 'success');
+        } else {
+          showStatus('Save failed: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showStatus('Save failed: ' + error.message, 'error');
+      }
+      
+      // Reset input box and button
+      inputBox.value = '';
+      inputBox.placeholder = 'Type your message...';
+      delete inputBox.dataset.answeringQuestion;
+      
+      const sendBtn = document.querySelector('button[onclick="submitAnswer()"]');
+      if (sendBtn) {
+        sendBtn.textContent = 'Send';
+        sendBtn.onclick = sendMessage;
+      }
+    }
+    
+    function getUserId() {
+      // Get user ID from URL or session, simplified here
+      return 'current_user';
+    }
+
+    // Upload audio file
+    async function sendAudioFile() {
+      const fileInput = document.getElementById('audio_file');
+      if (!fileInput.files.length) {
+        showStatus('Please select an audio file', 'error');
+        return;
+      }
+      const formData = new FormData();
+      formData.append('audio', fileInput.files[0]);
+      toggleLoading(true);
+      try {
+        const response = await fetch('/chat_audio', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        if (data.error) {
+          showStatus(data.error, 'error');
+          addMessage('[Audio transcription failed]', true);
+        } else {
+          addMessage(data.text || '[Audio uploaded]', true);
+          addMessage(data.reply, false, data.emotion, data.liwc);
+        }
+      } catch (error) {
+        showStatus('Audio upload failed: ' + error.message, 'error');
+      } finally {
+        toggleLoading(false);
+        fileInput.value = '';
+      }
+    }
+
+    // Recording progress bar and failure count
+    let isRecording = false;
+    let mediaRecorder, audioChunks = [];
+    let recordTimer = null;
+    let recordSeconds = 0;
+            let maxRecordSeconds = 60; // Support maximum 60 seconds
+    let recordFailCount = 0;
+    function toggleRecording() {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+          clearInterval(recordTimer);
+          document.getElementById('progressBarInner').style.width = '0%';
+          document.getElementById('recordProgress').style.display = 'none';
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          const formData = new FormData();
+          formData.append('audio', audioBlob, 'record.wav');
+          toggleLoading(true);
+          try {
+            const response = await fetch('/chat_audio', {
+              method: 'POST',
+              body: formData
+            });
+            const data = await response.json();
+            if (data.error) {
+              recordFailCount++;
+              showStatus(data.error, 'error');
+              addMessage('[Recording recognition failed]', true);
+              if (recordFailCount >= 3) {
+                showStatus('Multiple recording recognition failures, recommend trying text input.', 'error');
+              }
+            } else {
+              recordFailCount = 0;
+              addMessage(data.text || '[Recording sent]', true);
+              addMessage(data.reply, false, data.emotion, data.liwc);
+              
+              // Check if questions need to be answered
+              if (data.next_question) {
+                handleQuestion(data.next_question);
+              }
+            }
+          } catch (error) {
+            recordFailCount++;
+            showStatus('Recording send failed: ' + error.message, 'error');
+            if (recordFailCount >= 3) {
+              showStatus('Multiple recording recognition failures, recommend trying text input.', 'error');
+            }
+          } finally {
+            toggleLoading(false);
+          }
+        };
+        mediaRecorder.start();
+        isRecording = true;
+        document.getElementById('recordBtn').textContent = 'Stop Recording';
+        document.getElementById('recordBtn').className = 'btn btn-danger';
+        document.getElementById('recordingIndicator').classList.add('active');
+        showStatus('Recording started', 'success');
+        // Progress bar
+        document.getElementById('recordProgress').style.display = 'block';
+        recordSeconds = 0;
+        recordTimer = setInterval(() => {
+          recordSeconds++;
+          let percent = Math.min(100, (recordSeconds / maxRecordSeconds) * 100);
+          document.getElementById('progressBarInner').style.width = percent + '%';
+          if (recordSeconds >= maxRecordSeconds) {
+            stopRecording();
+          }
+        }, 1000);
+      } catch (error) {
+        showStatus('Microphone access denied: ' + error.message, 'error');
+      }
+    }
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      }
+      isRecording = false;
+      document.getElementById('recordBtn').textContent = 'Start Recording';
+      document.getElementById('recordBtn').className = 'btn btn-success';
+      document.getElementById('recordingIndicator').classList.remove('active');
+      showStatus('Recording stopped. Transcribing...', 'success');
+      clearInterval(recordTimer);
+      document.getElementById('progressBarInner').style.width = '0%';
+      document.getElementById('recordProgress').style.display = 'none';
+    }
+
+    // Real-time speech recognition (pseudo real-time, upload after recording ends)
+    let isRealtimeRecording = false;
+    let realtimeStream = null;
+    let realtimeRecorder = null;
+    let realtimeChunks = [];
+    function toggleRealtimeRecording() {
+      if (isRealtimeRecording) {
+        stopRealtimeRecording();
+      } else {
+        startRealtimeRecording();
+      }
+    }
+    async function startRealtimeRecording() {
+      try {
+        realtimeStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        realtimeRecorder = new MediaRecorder(realtimeStream);
+        realtimeChunks = [];
+        realtimeRecorder.ondataavailable = e => realtimeChunks.push(e.data);
+        realtimeRecorder.onstop = async () => {
+          if (realtimeChunks.length > 0) {
+            const audioBlob = new Blob(realtimeChunks, { type: 'audio/wav' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'realtime.wav');
+            try {
+              const response = await fetch('/chat_audio', {
+                method: 'POST',
+                body: formData
+              });
+              const data = await response.json();
+              if (!data.error) {
+                addMessage(data.text || '[Real-time audio]', true);
+                addMessage(data.reply, false, data.emotion, data.liwc);
+                
+                // Check if questions need to be answered
+                if (data.next_question) {
+                  handleQuestion(data.next_question);
+                }
+              }
+            } catch (error) {
+              console.error('Real-time recognition failed:', error);
+            }
+          }
+        };
+        realtimeRecorder.start();
+        isRealtimeRecording = true;
+        document.getElementById('realtimeBtn').textContent = 'Stop Real-time';
+        document.getElementById('realtimeBtn').className = 'btn btn-danger';
+        document.getElementById('realtimeIndicator').classList.add('active');
+        showStatus('Real-time recognition started', 'success');
+      } catch (error) {
+        showStatus('Microphone access denied: ' + error.message, 'error');
+      }
+    }
+    function stopRealtimeRecording() {
+      if (realtimeRecorder && realtimeRecorder.state !== 'inactive') {
+        realtimeRecorder.stop();
+        realtimeStream.getTracks().forEach(track => track.stop());
+      }
+      isRealtimeRecording = false;
+      document.getElementById('realtimeBtn').textContent = 'Start Real-time';
+      document.getElementById('realtimeBtn').className = 'btn btn-success';
+      document.getElementById('realtimeIndicator').classList.remove('active');
+      showStatus('Real-time recognition stopped', 'success');
+    }
+
+    // Status and loading prompts
+    function showStatus(message, type = 'success') {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+      status.style.display = 'block';
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 3000);
+    }
+    function toggleLoading(show) {
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
+    }
+    // Send with Enter key
+    document.getElementById("user_input").addEventListener("keypress", function(e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    // Clear chat history
+    function clearChat() {
+      document.getElementById("chat_log").innerHTML = "";
+      document.getElementById("user_input").value = "";
+      addMessage('Welcome! You can chat via text or voice. Choose the mode you prefer.', false);
+      showStatus('Chat cleared', 'success');
+    }
+    // Tab navigation and ARIA
+    document.querySelectorAll('textarea, input, button, .chat-container, .input-section, .voice-section').forEach(el => {
+      el.setAttribute('tabindex', '0');
+    });
+            // Page initialization welcome message
+    window.addEventListener('load', function() {
+      // Get conversation history from server
+      fetch('/api/chat_history')
+        .then(response => response.json())
+        .then(data => {
+          const chatLog = document.getElementById('chat_log');
+          
+          // If there are historical conversation records, restore them
+          if (data.history && data.history.length > 0) {
+            // Clear current display
+            chatLog.innerHTML = '';
+            
+            // Restore historical conversations
+            data.history.forEach((message, index) => {
+              // Alternately display user and AI messages
+              const isUserMessage = index % 2 === 0;
+              addMessage(message, isUserMessage);
+            });
+          } else {
+            // If no history, add welcome message
+            if (chatLog.children.length === 0) {
+              addMessage('Welcome! You can chat via text or voice. Choose the mode you prefer.', false);
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Failed to get conversation history:', error);
+          // If fetch fails, add welcome message
+          const chatLog = document.getElementById('chat_log');
+          if (chatLog.children.length === 0) {
+            addMessage('Welcome! You can chat via text or voice. Choose the mode you prefer.', false);
+          }
+        });
+
+      // Add button container to #button-area
+      const buttonArea = document.getElementById('button-area');
+      buttonArea.innerHTML = `
+        <div class="button-row">
+          <button class="btn btn-danger" onclick="clearChat()">Clear Chat</button>
+          <a href="/trend" class="btn btn-secondary">View Emotion Trends</a>
+          <a href="/questionnaire" class="btn btn-success">Wellbeing Questionnaire</a>
+        </div>
+        `;
+      });
+
+    // Warning popup functionality
+    function showWarningModal(title, message) {
+      document.getElementById('warningTitle').textContent = title;
+      document.getElementById('warningMessage').textContent = message;
+      document.getElementById('warningModal').style.display = 'block';
+    }
+
+    function closeWarningModal() {
+      document.getElementById('warningModal').style.display = 'none';
+    }
+
+    // Click outside modal to close
+    window.onclick = function(event) {
+      const modal = document.getElementById('warningModal');
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+  </script>
+  
+              <!-- Warning popup styles -->
+  <style>
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 0;
+      border: 2px solid #ff4444;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 500px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+      background-color: #ff4444;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1.2em;
+    }
+
+    .close {
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #ddd;
+    }
+
+    .modal-body {
+      padding: 20px;
+      font-size: 1.1em;
+      line-height: 1.5;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      text-align: right;
+      border-top: 1px solid #ddd;
+    }
+  </style>
+  
+      <!-- Warning popup HTML -->
+  <div id="warningModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="warningTitle">Alert</h3>
+        <span class="close" onclick="closeWarningModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p id="warningMessage"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeWarningModal()">我知道了</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

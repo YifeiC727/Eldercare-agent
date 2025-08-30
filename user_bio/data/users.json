@@ -1,0 +1,47 @@
+[
+  {
+    "basic_info": {
+      "name": "Yifei",
+      "age": 70,
+      "gender": null
+    },
+    "family_relation": {},
+    "living_habits": {},
+    "health_status": {},
+    "login_info": {
+      "username": "陈逸菲",
+      "password_hash": "684e4f9a1c8f2b01601c725161236109b4e56a5fda2e9832679ab5737e3d5fed"
+    },
+    "ip_address": "127.0.0.1",
+    "created_at": "2025-07-29T23:00:25.911188",
+    "updated_at": "2025-08-12T04:39:31.112591",
+    "question_status": {
+      "name": "answered",
+      "gender": "answered"
+    },
+    "conversation_count": 29,
+    "last_login": "2025-08-12T04:39:17.964344",
+    "_id": "6888e209ff2db8c95b449113"
+  },
+  {
+    "basic_info": {
+      "name": "Lucy",
+      "age": 100,
+      "gender": "女"
+    },
+    "family_relation": {},
+    "living_habits": {},
+    "health_status": {},
+    "login_info": {
+      "username": "Lucy",
+      "password_hash": "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5"
+    },
+    "ip_address": "127.0.0.1",
+    "created_at": "2025-08-05T15:44:33.325736",
+    "updated_at": "2025-08-05T15:44:33.325748",
+    "question_status": {},
+    "conversation_count": 2,
+    "last_login": "2025-08-06T02:19:01.512518",
+    "_id": "6891b66147d31f2e16f2592c"
+  }
+]

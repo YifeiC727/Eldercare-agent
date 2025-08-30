@@ -1,0 +1,75 @@
+<!-- Return to home button -->
+<a href="/" class="btn btn-primary" style="margin: 15px;">Back to Home</a>
+
+{% if error_message %}
+  <div style="color:red; font-weight:bold; margin-bottom:10px;">
+    {{ error_message }}
+  </div>
+{% endif %}
+
+<h2>老年抑郁量表（GDS-15）</h2>
+<form id="gds-form" method="POST" action="/questionnaire">
+  <ol>
+    <li>你对目前的生活感到满意吗？<br>
+      <input type="radio" name="q1" value="0" {% if request.form.get('q1') == '0' %} checked {% endif %}>是
+      <input type="radio" name="q1" value="1" {% if request.form.get('q1') == '1' %} checked {% endif %}>否
+    </li>
+    <li>你是否放弃了许多以往感兴趣的活动？<br>
+      <input type="radio" name="q2" value="1" {% if request.form.get('q2') == '1' %} checked {% endif %}>是
+      <input type="radio" name="q2" value="0" {% if request.form.get('q2') == '0' %} checked {% endif %}>否
+    </li>
+    <li>你觉得生活中常常感到空虚吗？<br>
+      <input type="radio" name="q3" value="1" {% if request.form.get('q3') == '1' %} checked {% endif %}>是
+      <input type="radio" name="q3" value="0" {% if request.form.get('q3') == '0' %} checked {% endif %}>否
+    </li>
+    <li>你经常感到无聊吗？<br>
+      <input type="radio" name="q4" value="1" {% if request.form.get('q4') == '1' %} checked {% endif %}>是
+      <input type="radio" name="q4" value="0" {% if request.form.get('q4') == '0' %} checked {% endif %}>否
+    </li>
+    <li>你心情大多数时候很好吗？<br>
+      <input type="radio" name="q5" value="0" {% if request.form.get('q5') == '0' %} checked {% endif %}>是
+      <input type="radio" name="q5" value="1" {% if request.form.get('q5') == '1' %} checked {% endif %}>否
+    </li>
+    <li>你担心一些看起来微不足道的事情吗？<br>
+      <input type="radio" name="q6" value="1" {% if request.form.get('q6') == '1' %} checked {% endif %}>是
+      <input type="radio" name="q6" value="0" {% if request.form.get('q6') == '0' %} checked {% endif %}>否
+    </li>
+    <li>你大多数时候觉得很开心吗？<br>
+      <input type="radio" name="q7" value="0" {% if request.form.get('q7') == '0' %} checked {% endif %}>是
+      <input type="radio" name="q7" value="1" {% if request.form.get('q7') == '1' %} checked {% endif %}>否
+    </li>
+    <li>你常常感到无助吗？<br>
+      <input type="radio" name="q8" value="1" {% if request.form.get('q8') == '1' %} checked {% endif %}>是
+      <input type="radio" name="q8" value="0" {% if request.form.get('q8') == '0' %} checked {% endif %}>否
+    </li>
+    <li>你宁愿待在家里，也不愿外出做新事情吗？<br>
+      <input type="radio" name="q9" value="1" {% if request.form.get('q9') == '1' %} checked {% endif %}>是
+      <input type="radio" name="q9" value="0" {% if request.form.get('q9') == '0' %} checked {% endif %}>否
+    </li>
+    <li>你觉得比以前记性差了吗？<br>
+      <input type="radio" name="q10" value="1" {% if request.form.get('q10') == '1' %} checked {% endif %}>是
+      <input type="radio" name="q10" value="0" {% if request.form.get('q10') == '0' %} checked {% endif %}>否
+    </li>
+    <li>你觉得活着是有价值的吗？<br>
+      <input type="radio" name="q11" value="0" {% if request.form.get('q11') == '0' %} checked {% endif %}>是
+      <input type="radio" name="q11" value="1" {% if request.form.get('q11') == '1' %} checked {% endif %}>否
+    </li>
+    <li>你觉得自己的生活很空虚吗？<br>
+      <input type="radio" name="q12" value="1" {% if request.form.get('q12') == '1' %} checked {% endif %}>是
+      <input type="radio" name="q12" value="0" {% if request.form.get('q12') == '0' %} checked {% endif %}>否
+    </li>
+    <li>你总是充满精力吗？<br>
+      <input type="radio" name="q13" value="0" {% if request.form.get('q13') == '0' %} checked {% endif %}>是
+      <input type="radio" name="q13" value="1" {% if request.form.get('q13') == '1' %} checked {% endif %}>否
+    </li>
+    <li>你觉得自己的处境无可救药吗？<br>
+      <input type="radio" name="q14" value="1" {% if request.form.get('q14') == '1' %} checked {% endif %}>是
+      <input type="radio" name="q14" value="0" {% if request.form.get('q14') == '0' %} checked {% endif %}>否
+    </li>
+    <li>你认为大多数人比你更好？<br>
+      <input type="radio" name="q15" value="1" {% if request.form.get('q15') == '1' %} checked {% endif %}>是
+      <input type="radio" name="q15" value="0" {% if request.form.get('q15') == '0' %} checked {% endif %}>否
+    </li>
+  </ol>
+  <button type="submit" class="btn btn-success" style="margin-top: 10px;">✅ 提交</button>
+</form>

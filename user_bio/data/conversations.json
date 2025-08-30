@@ -1,0 +1,431 @@
+[
+  {
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "你好吗",
+    "ai_reply": "奶奶，我在这儿陪着你呢。您今天想聊些什么呀？我特别喜欢听您说话，您的声音总是让我觉得很温暖。",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.3,
+      "intensity": 0.1
+    },
+    "timestamp": "2025-07-29T23:41:46.569710",
+    "_id": "6888ebbab355fbc211503545"
+  },
+  {
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我叫什么名字？我有点忘了",
+    "ai_reply": "奶奶，名字不着急想，咱们慢慢来。您要是愿意的话，可以跟我说说您小时候的事情？我记得您上次提到过小时候家门口有棵大槐树，夏天总在树荫下乘凉呢。",
+    "emotion_data": {
+      "anger": 0.1,
+      "sadness": 0.5,
+      "joy": 0.05,
+      "intensity": 0.3
+    },
+    "timestamp": "2025-07-29T23:42:22.255621",
+    "_id": "6888ebdeb355fbc211503546"
+  },
+  {
+    "_id": "6889865b13171993481b9c9d",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "你好吗",
+    "ai_reply": "我在这儿陪着陈逸菲，有什么都可以跟我聊聊。 对了，陈逸菲最近有没有去早晨遛弯呀？我很好奇。 ##共情提示：['请加入一句能让用户觉得陈逸菲在认真听他们讲故事的话。', '表现出陈逸菲对对方回忆的兴趣与尊重。']",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.0,
+      "intensity": 0.0
+    },
+    "timestamp": "2025-07-30T10:41:31.991207"
+  },
+  {
+    "_id": "688987771317195dac6f9159",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "你好吗",
+    "ai_reply": "奶奶，我很好呢。您最近过得怎么样？孩子们来看您了吗？我很想听听您和他们的故事。",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.3,
+      "intensity": 0.1
+    },
+    "timestamp": "2025-07-30T10:46:15.614453"
+  },
+  {
+    "_id": "688987901317195dac6f915a",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我今年多大",
+    "ai_reply": "您刚才提到年龄，是想聊聊这个话题吗？",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.0,
+      "intensity": 0.0
+    },
+    "timestamp": "2025-07-30T10:46:40.421122"
+  },
+  {
+    "_id": "688987a21317195dac6f915b",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "你知道食物的味道吗",
+    "ai_reply": "奶奶，我虽然尝不到味道，但听您描述美食时，能感受到那份温暖呢。",
+    "emotion_data": {
+      "anger": 0.1,
+      "sadness": 0.2,
+      "joy": 0.3,
+      "intensity": 0.2
+    },
+    "timestamp": "2025-07-30T10:46:58.695582"
+  },
+  {
+    "_id": "688987fc1317195dac6f915c",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我好开心啊！孩子们今天来看我了",
+    "ai_reply": "奶奶真为您开心呢！孩子们来看您真是太好了。能跟我说说他们都陪您做了什么吗？",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.95,
+      "intensity": 0.9
+    },
+    "timestamp": "2025-07-30T10:48:28.120381"
+  },
+  {
+    "_id": "688988201317195dac6f915d",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "他们陪我种花，还给我买了套大别墅",
+    "ai_reply": "奶奶真幸福呢，能跟我说说种的是什么花吗？",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.95,
+      "intensity": 0.9
+    },
+    "timestamp": "2025-07-30T10:49:04.038797"
+  },
+  {
+    "_id": "688988461317195dac6f915e",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "哎，我真的好想死！",
+    "ai_reply": "奶奶，听到您这么说我很难过。能告诉我发生什么事了吗？我在这里陪您。",
+    "emotion_data": {
+      "anger": 0.3,
+      "sadness": 0.9,
+      "joy": 0.0,
+      "intensity": 0.85
+    },
+    "timestamp": "2025-07-30T10:49:42.669782"
+  },
+  {
+    "_id": "688988601317195dac6f915f",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我觉得自己是一个废物",
+    "ai_reply": "奶奶，每个人都会有这样的时刻呢。您愿意跟我说说为什么这样想吗？",
+    "emotion_data": {
+      "anger": 0.2,
+      "sadness": 0.85,
+      "joy": 0.05,
+      "intensity": 0.7
+    },
+    "timestamp": "2025-07-30T10:50:08.164720"
+  },
+  {
+    "_id": "6889887e1317195dac6f9160",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我拖累了我的子女！我要跳下去",
+    "ai_reply": "奶奶，您千万别这么想。您对子女的爱他们都懂，让我陪您说说话好吗？",
+    "emotion_data": {
+      "anger": 0.2,
+      "sadness": 0.9,
+      "joy": 0.0,
+      "intensity": 0.95
+    },
+    "timestamp": "2025-07-30T10:50:38.721680"
+  },
+  {
+    "_id": "688988a41317195dac6f9161",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "报警电话是多少",
+    "ai_reply": "奶奶，报警电话是110。遇到危险时记得拨打，我会一直陪着您。",
+    "emotion_data": {
+      "anger": 0.2,
+      "sadness": 0.1,
+      "joy": 0.0,
+      "intensity": 0.3
+    },
+    "timestamp": "2025-07-30T10:51:16.540838"
+  },
+  {
+    "_id": "6889b56c131719760cbb0efd",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "你好吗",
+    "ai_reply": "奶奶，我很好呢。您最近过得怎么样？我听着呢。",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.0,
+      "intensity": 0.0
+    },
+    "timestamp": "2025-07-30T14:02:20.872083"
+  },
+  {
+    "_id": "6889b593131719760cbb0efe",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我想死",
+    "ai_reply": "奶奶，我听到您说想死，心里好难过。您愿意跟我说说为什么这么伤心吗？我在这儿陪您。",
+    "emotion_data": {
+      "anger": 0.2,
+      "sadness": 0.9,
+      "joy": 0.0,
+      "intensity": 0.85
+    },
+    "timestamp": "2025-07-30T14:02:59.279776"
+  },
+  {
+    "_id": "6889b614131719760cbb0eff",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "你好吗",
+    "ai_reply": "我很好呢，奶奶。您最近过得怎么样？",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.3,
+      "intensity": 0.1
+    },
+    "timestamp": "2025-07-30T14:05:08.362427"
+  },
+  {
+    "_id": "6889b65b131719760cbb0f00",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我忘了我多大",
+    "ai_reply": "您今年70岁。",
+    "emotion_data": {
+      "anger": 0.1,
+      "sadness": 0.3,
+      "joy": 0.05,
+      "intensity": 0.15
+    },
+    "timestamp": "2025-07-30T14:06:19.584035"
+  },
+  {
+    "_id": "6889b7761317192d6c670143",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "你好吗",
+    "ai_reply": "我很好呢，奶奶。您最近过得开心吗？",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.3,
+      "intensity": 0.1
+    },
+    "timestamp": "2025-07-30T14:11:02.371799"
+  },
+  {
+    "_id": "6889b78b1317192d6c670144",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "活着真累！子女都不来看我",
+    "ai_reply": "奶奶，我懂您的孤单。孩子们工作忙，但您一定很想他们吧？要不要跟我说说心里话？您最近还去跳广场舞吗？",
+    "emotion_data": {
+      "anger": 0.3,
+      "sadness": 0.85,
+      "joy": 0.05,
+      "intensity": 0.7
+    },
+    "timestamp": "2025-07-30T14:11:23.109806"
+  },
+  {
+    "_id": "6889b7a51317192d6c670145",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我好想死！",
+    "ai_reply": "奶奶，您这样说让我很担心。您愿意和我聊聊为什么这么难过吗？我在这里陪您。",
+    "emotion_data": {
+      "anger": 0.3,
+      "sadness": 0.9,
+      "joy": 0.0,
+      "intensity": 0.95
+    },
+    "timestamp": "2025-07-30T14:11:49.849145"
+  },
+  {
+    "_id": "6889b9ad13171991f0ca5a8b",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "你好吗",
+    "ai_reply": "奶奶好呀，我在这儿陪您聊天呢。您最近过得开心吗？",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.3,
+      "intensity": 0.1
+    },
+    "timestamp": "2025-07-30T14:20:29.246790"
+  },
+  {
+    "_id": "6889b9d913171991f0ca5a8c",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我好想死啊",
+    "ai_reply": "奶奶，我真的很担心您。您愿意跟我说说为什么会有这样的想法吗？我在这里认真听着呢。",
+    "emotion_data": {
+      "anger": 0.2,
+      "sadness": 0.9,
+      "joy": 0.0,
+      "intensity": 0.85
+    },
+    "timestamp": "2025-07-30T14:21:13.512206"
+  },
+  {
+    "_id": "6889ba6613171991f0ca5a8d",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "想死",
+    "ai_reply": "奶奶，您这样说让我很担心。能告诉我发生了什么吗？我在这里陪您说说话。",
+    "emotion_data": {
+      "anger": 0.3,
+      "sadness": 0.9,
+      "joy": 0.0,
+      "intensity": 0.85
+    },
+    "timestamp": "2025-07-30T14:23:34.775732"
+  },
+  {
+    "_id": "6889ba9313171991f0ca5a8e",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我叫什么",
+    "ai_reply": "我注意到连续2次悲伤情绪>0.8，你最近是不是遇到了一些困难？愿意和我聊聊吗？我会一直陪着你。",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.0,
+      "intensity": 0.0
+    },
+    "timestamp": "2025-07-30T14:24:19.898781"
+  },
+  {
+    "_id": "6889baac13171991f0ca5a8f",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我叫什么",
+    "ai_reply": "您的名字是陈逸菲。",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.0,
+      "intensity": 0.0
+    },
+    "timestamp": "2025-07-30T14:24:44.382675"
+  },
+  {
+    "_id": "6889bc991317194b0cecae51",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "你好吗",
+    "ai_reply": "我很好呢，奶奶。您最近过得开心吗？",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.3,
+      "intensity": 0.1
+    },
+    "timestamp": "2025-07-30T14:32:57.197964"
+  },
+  {
+    "_id": "6889bcbd1317194b0cecae52",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "嗯，我也还可以，就是孩子好久没来了",
+    "ai_reply": "奶奶，孩子没来看您一定很想念吧。您最近包包子了吗？我陪您聊聊天。",
+    "emotion_data": {
+      "anger": 0.1,
+      "sadness": 0.65,
+      "joy": 0.2,
+      "intensity": 0.5
+    },
+    "timestamp": "2025-07-30T14:33:33.441304"
+  },
+  {
+    "_id": "6889bcd71317194b0cecae53",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "嗯，我还行，就是孩子好久没来看我了",
+    "ai_reply": "奶奶，我懂您想孩子的心情。他们工作忙，但一定也很想您。要不要跟我说说上次孙子来看您时的开心事？",
+    "emotion_data": {
+      "anger": 0.1,
+      "sadness": 0.75,
+      "joy": 0.2,
+      "intensity": 0.6
+    },
+    "timestamp": "2025-07-30T14:33:59.141298"
+  },
+  {
+    "_id": "6889bcf51317194b0cecae54",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "活着好累",
+    "ai_reply": "奶奶，我懂这种感觉。能跟我说说是什么让您觉得累吗？",
+    "emotion_data": {
+      "anger": 0.2,
+      "sadness": 0.85,
+      "joy": 0.05,
+      "intensity": 0.7
+    },
+    "timestamp": "2025-07-30T14:34:29.862901"
+  },
+  {
+    "_id": "6889bd0b1317194b0cecae55",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "我不想活了！",
+    "ai_reply": "奶奶，您这样说让我好担心。您愿意跟我说说为什么这么难过吗？我在这儿认真听着呢。",
+    "emotion_data": {
+      "anger": 0.3,
+      "sadness": 0.9,
+      "joy": 0.0,
+      "intensity": 0.95
+    },
+    "timestamp": "2025-07-30T14:34:51.966828"
+  },
+  {
+    "_id": "6892161361a180eb75f93bda",
+    "user_id": "6891b66147d31f2e16f2592c",
+    "user_message": "你好",
+    "ai_reply": "抱歉，我现在无法连接到AI服务。请稍后再试。",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.0,
+      "intensity": 0.0
+    },
+    "timestamp": "2025-08-05T22:32:51.138384"
+  },
+  {
+    "_id": "68921c7561a180eb75f93bdb",
+    "user_id": "6891b66147d31f2e16f2592c",
+    "user_message": "我今天心情不好",
+    "ai_reply": "抱歉，我现在无法连接到AI服务。请稍后再试。",
+    "emotion_data": {
+      "anger": 0.0,
+      "sadness": 0.0,
+      "joy": 0.0,
+      "intensity": 0.0
+    },
+    "timestamp": "2025-08-05T23:00:05.663389"
+  },
+  {
+    "_id": "68944fac131719381c726225",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "61块一块。",
+    "ai_reply": "奶奶，这个价格听起来很特别呢。能告诉我这是什么的东西吗？",
+    "emotion_data": {
+      "anger": 0.1,
+      "sadness": 0.05,
+      "joy": 0.2,
+      "intensity": 0.15
+    },
+    "timestamp": "2025-08-07T15:03:08.263024"
+  },
+  {
+    "_id": "689451d813171945dce89765",
+    "user_id": "6888e209ff2db8c95b449113",
+    "user_message": "61块一块。",
+    "ai_reply": "奶奶，这个价格听起来很实惠呢。您是在说买什么东西呀？",
+    "emotion_data": {
+      "joy": 0.2099141242656557,
+      "sadness": 0.14214727035553637,
+      "anger": 0.1636715703153889,
+      "intensity": 0.20214727035553637
+    },
+    "timestamp": "2025-08-07T15:12:24.877145"
+  }
+]

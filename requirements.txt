@@ -1,0 +1,21 @@
+flask
+werkzeug
+requests
+python-dotenv
+jieba
+openai
+pyaudio
+baidu-aip
+sentence-transformers
+tinydb
+faiss-cpu
+numpy 
+chardet
+seaborn
+matplotlib
+# pymongo
+pydub
+bson
+librosa
+# pyaudioop
+torch

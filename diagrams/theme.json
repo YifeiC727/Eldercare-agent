@@ -1,0 +1,17 @@
+{
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#E8F1FB",
+    "primaryTextColor": "#1F2940",
+    "primaryBorderColor": "#4C78A8",
+    "lineColor": "#4C78A8",
+    "secondaryColor": "#EAF7EE",
+    "tertiaryColor": "#FFF3E0",
+    "clusterBkg": "#F4F6FA",
+    "clusterBorder": "#9AA5B1",
+    "nodeBkg": "#FFFFFF",
+    "nodeBorder": "#4C78A8",
+    "edgeLabelBackground": "#FFFFFF",
+    "fontFamily": "-apple-system, Helvetica, Arial, sans-serif"
+  }
+} 
