@@ -6,7 +6,7 @@ from strategy.strategy_selector import StrategySelector
 class LLMGenerator:
     def __init__(self):
         load_dotenv()
-        self.api_key = os.getenv("CAMELLIA_KEY")  # ✅ 读取 DeepSeek 的 key
+        self.api_key = os.getenv("CAMELLIA_KEY")  # ✅ Read DeepSeek key
         self.api_url = "https://api.deepseek.com/v1/chat/completions"
         self.model = "deepseek-chat"
 
@@ -14,11 +14,11 @@ class LLMGenerator:
         rules_prompt = strategy_output.get("rules_prompt", "")
         guide = strategy_output.get("引导语", "")
         
-        # 如果是个人信息查询，直接返回引导语，不需要LLM处理
+        # If it's personal info query, directly return guide text without LLM processing
         if strategy_output.get("matched_rule", "").startswith("PersonalInfo"):
             return guide
         
-        # 优化提示词，强调简洁性和真实性
+        # Optimize prompts, emphasizing conciseness and authenticity
         full_prompt = f"""用户说：'{user_input}'
 
 请严格按照以下引导语回复，要求：
@@ -38,7 +38,7 @@ class LLMGenerator:
             "Content-Type": "application/json"
         }
 
-        # 优化系统提示词，强调简洁性和真实性
+        # Optimize system prompts, emphasizing conciseness and authenticity
         system_content = """你是"元元"，28岁，温柔善解人意的女性情感陪伴AI。
 
 核心原则：
@@ -58,9 +58,9 @@ class LLMGenerator:
                 {"role": "system", "content": system_content},
                 {"role": "user", "content": full_prompt}
             ],
-            "temperature": 0.2,  # 进一步降低温度，让回复更确定性
-            "max_tokens": 100,   # 限制最大token数，确保简洁
-            "top_p": 0.8        # 控制输出多样性
+            "temperature": 0.2,  # Further reduce temperature for more deterministic responses
+            "max_tokens": 100,   # Limit max tokens to ensure conciseness
+            "top_p": 0.8        # Control output diversity
         }
 
         try:
@@ -68,9 +68,9 @@ class LLMGenerator:
             response.raise_for_status()
             content = response.json()["choices"][0]["message"]["content"]
             
-            # 后处理：确保回复简洁
+            # Post-processing: ensure response is concise
             if len(content) > 100:
-                # 如果回复过长，截取前100个字符
+                # If response is too long, truncate to first 100 characters
                 content = content[:100].rstrip()
                 if not content.endswith(('。', '！', '？', '，')):
                     content += '。'
@@ -79,16 +79,16 @@ class LLMGenerator:
             
         except Exception as e:
             print(f"LLM API调用失败: {e}")
-            # 返回简单的fallback回复，而不是直接返回引导语
+            # Return simple fallback response instead of directly returning guidance
             if "401" in str(e) or "Unauthorized" in str(e):
                 return "抱歉，我现在无法连接到AI服务。请稍后再试。"
             elif guide:
-                # 如果API失败但有引导语，返回一个简化的回复
+                # If API fails but has guidance, return a simplified response
                 return "我理解您的感受，能多和我说说吗？"
             else:
                 return "我理解您的感受，能多和我说说吗？"
 
-# === 以下逻辑不变 ===
+# === Logic below unchanged ===
 if __name__ == "__main__":
     selector = StrategySelector()
     generator = LLMGenerator()

@@ -7,11 +7,11 @@ from sklearn.metrics import mean_squared_error, roc_auc_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans']
+# Set font support for English
+plt.rcParams['font.sans-serif'] = ['Arial', 'DejaVu Sans', 'Liberation Sans']
 plt.rcParams['axes.unicode_minus'] = False
 
-# 定义MLP模型类（与train_stacking.py中相同）
+# Define MLP model class (same as in train_stacking.py)
 class EmotionRegressor(nn.Module):
     def __init__(self, text_emb_dim, emo_feat_dim):
         super().__init__()
@@ -26,33 +26,33 @@ class EmotionRegressor(nn.Module):
         return self.fc(x)
 
 def load_data_and_models():
-    """加载验证数据和已训练的模型"""
-    print("正在加载验证数据和模型...")
+    """Load validation data and trained models"""
+    print("Loading validation data and models...")
     
-    # 加载验证数据
+    # Load validation data
     validation_data = joblib.load('validation_data.pkl')
     X_text_val = validation_data['X_text_val']
     X_emo_val = validation_data['X_emo_val']
     y_val = validation_data['y_val']
     
-    # 加载已训练的模型
-    # 对于MLP，需要先创建模型实例，再加载权重
+    # Load trained models
+    # For MLP, need to create model instance first, then load weights
     mlp_model = EmotionRegressor(X_text_val.shape[1], X_emo_val.shape[1])
     mlp_model.load_state_dict(torch.load("mlp_model.pt", map_location='cpu'))
-    mlp_model.eval()  # 设置为评估模式
+    mlp_model.eval()  # Set to evaluation mode
     
     lgb_models = joblib.load("lgb_models.pkl")
     ridge_models = joblib.load("ridge_models.pkl")
     stacker = joblib.load("stacker.pkl")
     
-    print(f"验证集样本数: {len(X_text_val)}")
-    print("模型加载完成")
+    print(f"Validation set samples: {len(X_text_val)}")
+    print("Models loaded successfully")
     
     return X_text_val, X_emo_val, y_val, mlp_model, lgb_models, ridge_models, stacker
 
 def evaluate_single_model(model, X_text, X_emo, y, model_name):
-    """评估单个模型"""
-    print(f"评估 {model_name}...")
+    """Evaluate single model"""
+    print(f"Evaluating {model_name}...")
     
     if model_name == "MLP":
         with torch.no_grad():
@@ -62,11 +62,11 @@ def evaluate_single_model(model, X_text, X_emo, y, model_name):
         X_combined = np.concatenate([X_text, X_emo], axis=1)
         y_pred = np.stack([m.predict(X_combined) for m in model], axis=1)
     
-    # 计算整体MSE
+    # Calculate overall MSE
     mse_overall = mean_squared_error(y, y_pred)
     
-    # 计算各维度的MSE和AUC-ROC
-    emotion_names = ["anger", "sadness", "joy", "intensity"]
+    # Calculate MSE and AUC-ROC for each dimension
+    emotion_names = ["Anger", "Sadness", "Joy", "Intensity"]
     results = {}
     
     for i, emotion in enumerate(emotion_names):
@@ -77,7 +77,7 @@ def evaluate_single_model(model, X_text, X_emo, y, model_name):
             auc = 0.0
         results[emotion] = {"mse": mse_dim, "auc": auc}
     
-    # 计算平均AUC-ROC
+    # Calculate average AUC-ROC
     avg_auc = np.mean([results[emotion]["auc"] for emotion in emotion_names])
     
     return {
@@ -88,10 +88,10 @@ def evaluate_single_model(model, X_text, X_emo, y, model_name):
     }
 
 def evaluate_stacking_model(mlp_model, lgb_models, ridge_models, stacker, X_text, X_emo, y):
-    """评估Stacking模型"""
-    print("评估 Stacking Ensemble...")
+    """Evaluate Stacking model"""
+    print("Evaluating Stacking Ensemble...")
     
-    # 获取基础模型预测
+    # Get base model predictions
     with torch.no_grad():
         mlp_pred = mlp_model(torch.tensor(X_text, dtype=torch.float32), 
                             torch.tensor(X_emo, dtype=torch.float32)).cpu().numpy()
@@ -100,15 +100,15 @@ def evaluate_stacking_model(mlp_model, lgb_models, ridge_models, stacker, X_text
     lgb_pred = np.stack([m.predict(X_combined) for m in lgb_models], axis=1)
     ridge_pred = np.stack([m.predict(X_combined) for m in ridge_models], axis=1)
     
-    # Stacking预测
+    # Stacking prediction
     X_stack = np.concatenate([mlp_pred, lgb_pred, ridge_pred], axis=1)
     y_pred = stacker.predict(X_stack)
     
-    # 计算整体MSE
+    # Calculate overall MSE
     mse_overall = mean_squared_error(y, y_pred)
     
-    # 计算各维度的MSE和AUC-ROC
-    emotion_names = ["anger", "sadness", "joy", "intensity"]
+    # Calculate MSE and AUC-ROC for each dimension
+    emotion_names = ["Anger", "Sadness", "Joy", "Intensity"]
     results = {}
     
     for i, emotion in enumerate(emotion_names):
@@ -119,7 +119,7 @@ def evaluate_stacking_model(mlp_model, lgb_models, ridge_models, stacker, X_text
             auc = 0.0
         results[emotion] = {"mse": mse_dim, "auc": auc}
     
-    # 计算平均AUC-ROC
+    # Calculate average AUC-ROC
     avg_auc = np.mean([results[emotion]["auc"] for emotion in emotion_names])
     
     return {
@@ -130,24 +130,24 @@ def evaluate_stacking_model(mlp_model, lgb_models, ridge_models, stacker, X_text
     }
 
 def print_comparison_results(all_results):
-    """打印对比结果"""
+    """Print comparison results"""
     print("\n" + "="*80)
-    print("模型性能对比结果")
+    print("Model Performance Comparison Results")
     print("="*80)
     
-    # 整体性能对比
-    print("\n整体性能对比:")
-    print(f"{'模型名称':<20} {'MSE':<10} {'平均AUC-ROC':<12}")
+    # Overall performance comparison
+    print("\nOverall Performance Comparison:")
+    print(f"{'Model Name':<20} {'MSE':<10} {'Average AUC-ROC':<12}")
     print("-" * 50)
     
     for result in all_results:
         print(f"{result['model_name']:<20} {result['mse_overall']:<10.4f} {result['avg_auc']:<12.4f}")
     
-    # 各情绪维度详细对比
-    emotion_names = ["anger", "sadness", "joy", "intensity"]
+    # Detailed comparison by emotion dimension
+    emotion_names = ["Anger", "Sadness", "Joy", "Intensity"]
     
-    print(f"\n各情绪维度详细对比:")
-    print(f"{'情绪':<10} {'模型':<20} {'MSE':<10} {'AUC-ROC':<10}")
+    print(f"\nDetailed Comparison by Emotion Dimension:")
+    print(f"{'Emotion':<10} {'Model':<20} {'MSE':<10} {'AUC-ROC':<10}")
     print("-" * 60)
     
     for emotion in emotion_names:
@@ -157,48 +157,48 @@ def print_comparison_results(all_results):
         print("-" * 60)
 
 def plot_comparison_results(all_results):
-    """绘制对比结果图表"""
-    print("\n正在生成对比图表...")
+    """Plot comparison result charts"""
+    print("\nGenerating comparison charts...")
     
-    # 准备数据
+    # Prepare data
     model_names = [result['model_name'] for result in all_results]
     mse_values = [result['mse_overall'] for result in all_results]
     auc_values = [result['avg_auc'] for result in all_results]
     
-    # 创建对比图
+    # Create comparison charts
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
     
-    # MSE对比
+    # MSE comparison
     colors = ['skyblue', 'lightgreen', 'lightcoral', 'gold']
     bars1 = ax1.bar(model_names, mse_values, color=colors[:len(model_names)])
-    ax1.set_title('整体MSE对比 (越低越好)', fontsize=14)
-    ax1.set_ylabel('MSE')
+    ax1.set_title('Overall MSE Comparison (Lower is Better)', fontsize=14)
+    ax1.set_ylabel('Mean Squared Error (MSE)')
     ax1.tick_params(axis='x', rotation=45)
     
-    # 在柱状图上添加数值
+    # Add values on bar charts
     for bar, value in zip(bars1, mse_values):
         ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.001, 
                 f'{value:.4f}', ha='center', va='bottom')
     
-    # AUC-ROC对比
+    # AUC-ROC comparison
     bars2 = ax2.bar(model_names, auc_values, color=colors[:len(model_names)])
-    ax2.set_title('平均AUC-ROC对比 (越高越好)', fontsize=14)
+    ax2.set_title('Average AUC-ROC Comparison (Higher is Better)', fontsize=14)
     ax2.set_ylabel('AUC-ROC')
     ax2.tick_params(axis='x', rotation=45)
     
-    # 在柱状图上添加数值
+    # Add values on bar charts
     for bar, value in zip(bars2, auc_values):
         ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01, 
                 f'{value:.4f}', ha='center', va='bottom')
     
     plt.tight_layout()
     plt.savefig('model_comparison_final.png', dpi=300, bbox_inches='tight')
-    print("对比图表已保存为 'model_comparison_final.png'")
+    print("Comparison chart saved as 'model_comparison_final.png'")
     
-    # 各情绪维度热力图
-    emotion_names = ["anger", "sadness", "joy", "intensity"]
+    # Emotion dimension heatmaps
+    emotion_names = ["Anger", "Sadness", "Joy", "Intensity"]
     
-    # 准备热力图数据
+    # Prepare heatmap data
     mse_matrix = []
     auc_matrix = []
     
@@ -208,51 +208,55 @@ def plot_comparison_results(all_results):
         mse_matrix.append(mse_row)
         auc_matrix.append(auc_row)
     
-    # 绘制热力图
+    # Draw heatmaps
     fig2, (ax3, ax4) = plt.subplots(1, 2, figsize=(16, 6))
     
-    # MSE热力图
+    # MSE heatmap
     sns.heatmap(mse_matrix, annot=True, fmt='.4f', cmap='Reds_r', 
                 xticklabels=emotion_names, yticklabels=model_names, ax=ax3)
-    ax3.set_title('各情绪维度MSE热力图 (越红越差)', fontsize=14)
+    ax3.set_title('MSE Heatmap by Emotion Dimension (Darker = Worse)', fontsize=14)
+    ax3.set_xlabel('Emotion Dimensions')
+    ax3.set_ylabel('Models')
     
-    # AUC-ROC热力图
+    # AUC-ROC heatmap
     sns.heatmap(auc_matrix, annot=True, fmt='.4f', cmap='Greens', 
                 xticklabels=emotion_names, yticklabels=model_names, ax=ax4)
-    ax4.set_title('各情绪维度AUC-ROC热力图 (越绿越好)', fontsize=14)
+    ax4.set_title('AUC-ROC Heatmap by Emotion Dimension (Darker = Better)', fontsize=14)
+    ax4.set_xlabel('Emotion Dimensions')
+    ax4.set_ylabel('Models')
     
     plt.tight_layout()
     plt.savefig('emotion_dimension_comparison_final.png', dpi=300, bbox_inches='tight')
-    print("情绪维度对比图已保存为 'emotion_dimension_comparison_final.png'")
+    print("Emotion dimension comparison chart saved as 'emotion_dimension_comparison_final.png'")
 
 def main():
-    """主函数"""
+    """Main function"""
     try:
-        # 加载验证数据和模型
+        # Load validation data and models
         X_text_val, X_emo_val, y_val, mlp_model, lgb_models, ridge_models, stacker = load_data_and_models()
         
-        # 评估各个模型
+        # Evaluate all models
         all_results = []
         
-        # 评估基础模型
+        # Evaluate base models
         all_results.append(evaluate_single_model(mlp_model, X_text_val, X_emo_val, y_val, "MLP"))
-        all_results.append(evaluate_single_model(lgb_models, X_text_val, X_emo_val, y_val, "LightGBM/Ridge"))
+        all_results.append(evaluate_single_model(lgb_models, X_text_val, X_emo_val, y_val, "LightGBM"))
         all_results.append(evaluate_single_model(ridge_models, X_text_val, X_emo_val, y_val, "Ridge"))
         
-        # 评估Stacking模型
+        # Evaluate Stacking model
         all_results.append(evaluate_stacking_model(mlp_model, lgb_models, ridge_models, stacker, 
                                                  X_text_val, X_emo_val, y_val))
         
-        # 打印对比结果
+        # Print comparison results
         print_comparison_results(all_results)
         
-        # 绘制对比图表
+        # Plot comparison charts
         plot_comparison_results(all_results)
         
-        print("\n=== 模型对比完成 ===")
+        print("\n=== Model Comparison Completed ===")
         
     except Exception as e:
-        print(f"对比过程中出现错误: {e}")
+        print(f"Error occurred during comparison: {e}")
         import traceback
         traceback.print_exc()
 

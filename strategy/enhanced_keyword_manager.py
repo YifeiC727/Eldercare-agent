@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-增强版关键词管理器
-直接从conversations.json实时提取关键词，避免重复存储
+Enhanced Keyword Manager
+Directly extract keywords from conversations.json in real-time to avoid redundant storage
 """
 
 import json
@@ -36,32 +36,32 @@ class EnhancedKeywordManager:
             "唱歌": "你还喜欢唱歌吗？有没有最近常唱的歌？"
         }
         
-        # 缓存机制
+        # Cache mechanism
         self._keyword_cache = {}  # {user_id: {keyword: last_seen_timestamp}}
-        self._cache_expiry = timedelta(hours=1)  # 缓存1小时
+        self._cache_expiry = timedelta(hours=1)  # Cache for 1 hour
         self._last_cache_update = None
 
     def _load_conversations(self) -> List[Dict]:
-        """加载对话数据"""
+        """Load conversation data"""
         try:
             if os.path.exists(self.conv_file):
                 with open(self.conv_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
-            print(f"加载对话数据失败: {e}")
+            print(f"Failed to load conversation data: {e}")
         return []
 
     def _extract_keywords_from_text(self, text: str) -> Set[str]:
-        """从文本中提取关键词"""
+        """Extract keywords from text"""
         keywords = set()
         
-        # 1. 模板关键词匹配
+        # 1. Template keyword matching
         for keyword in self.keyword_templates.keys():
             if keyword in text:
                 keywords.add(keyword)
         
-        # 2. 实体识别（简单版本）
-        # 人名、地名、时间等
+        # 2. Entity recognition (simplified version)
+        # Names, places, time, etc.
         entity_patterns = [
             r'[一-龯]{2,4}(?:老师|医生|护士|朋友|同事|邻居)',
             r'[一-龯]{2,4}(?:医院|公园|超市|菜市场)',
@@ -77,13 +77,13 @@ class EnhancedKeywordManager:
         return keywords
 
     def _is_cache_valid(self) -> bool:
-        """检查缓存是否有效"""
+        """Check if cache is valid"""
         if not self._last_cache_update:
             return False
         return datetime.now() - self._last_cache_update < self._cache_expiry
 
     def _update_cache(self):
-        """更新关键词缓存"""
+        """Update keyword cache"""
         conversations = self._load_conversations()
         new_cache = {}
         
@@ -95,21 +95,21 @@ class EnhancedKeywordManager:
             if user_id not in new_cache:
                 new_cache[user_id] = {}
             
-            # 提取用户消息和AI回复中的关键词
+            # Extract keywords from user messages and AI replies
             user_message = conv.get("user_message", "")
             ai_reply = conv.get("ai_reply", "")
             timestamp = conv.get("timestamp", "")
             
-            # 合并文本并提取关键词
+            # Merge text and extract keywords
             combined_text = f"{user_message} {ai_reply}"
             keywords = self._extract_keywords_from_text(combined_text)
             
-            # 更新缓存
+            # Update cache
             for keyword in keywords:
                 if keyword not in new_cache[user_id]:
                     new_cache[user_id][keyword] = timestamp
                 else:
-                    # 保留最新的时间戳
+                    # Keep the latest timestamp
                     if timestamp > new_cache[user_id][keyword]:
                         new_cache[user_id][keyword] = timestamp
         
@@ -117,16 +117,16 @@ class EnhancedKeywordManager:
         self._last_cache_update = datetime.now()
 
     def get_recent_keywords(self, user_id: str, limit: int = 10, hours: int = 24) -> List[str]:
-        """获取用户最近的关键词"""
+        """Get user's recent keywords"""
         try:
-            # 检查缓存
+            # Check cache
             if not self._is_cache_valid():
                 self._update_cache()
             
             if user_id not in self._keyword_cache:
                 return []
             
-            # 过滤时间范围内的关键词
+            # Filter keywords within time range
             cutoff_time = datetime.now() - timedelta(hours=hours)
             recent_keywords = []
             
@@ -136,10 +136,10 @@ class EnhancedKeywordManager:
                     if timestamp > cutoff_time:
                         recent_keywords.append((keyword, timestamp))
                 except:
-                    # 如果时间戳解析失败，仍然包含关键词
+                    # If timestamp parsing fails, still include the keyword
                     recent_keywords.append((keyword, datetime.now()))
             
-            # 按时间排序，返回最新的关键词
+            # Sort by time, return the latest keywords
             recent_keywords.sort(key=lambda x: x[1], reverse=True)
             return [kw[0] for kw in recent_keywords[:limit]]
             
@@ -148,16 +148,16 @@ class EnhancedKeywordManager:
             return []
 
     def get_keyword_empathy(self, user_id: str, user_input: str = None, limit: int = 3) -> List[str]:
-        """获取关键词共情语句"""
+        """Get keyword empathy statements"""
         try:
-            recent_keywords = self.get_recent_keywords(user_id, limit=limit * 2)  # 获取更多关键词用于筛选
+            recent_keywords = self.get_recent_keywords(user_id, limit=limit * 2)  # Get more keywords for filtering
             
             if not recent_keywords:
                 return []
             
-            # 如果有用户输入，进行语义匹配
+            # If there's user input, perform semantic matching
             if user_input:
-                # 简单的关键词匹配（可以扩展为语义匹配）
+                # Simple keyword matching (can be extended to semantic matching)
                 relevant_keywords = []
                 for keyword in recent_keywords:
                     if keyword in user_input or any(kw in keyword for kw in user_input.split()):
@@ -166,13 +166,13 @@ class EnhancedKeywordManager:
                 if relevant_keywords:
                     recent_keywords = relevant_keywords[:limit]
             
-            # 生成共情语句
+            # Generate empathy statements
             empathy_statements = []
             for keyword in recent_keywords[:limit]:
                 if keyword in self.keyword_templates:
                     template = self.keyword_templates[keyword]
                     
-                    # 移除可能造成虚假记忆的词汇
+                    # Remove phrases that might cause false memories
                     problematic_phrases = [
                         "你之前提到", "你前面说过", "你曾提起", "你前面说起",
                         "你讲到", "你刚刚提到的", "你前面说"
@@ -193,7 +193,7 @@ class EnhancedKeywordManager:
             return []
 
     def get_user_keyword_stats(self, user_id: str) -> Dict:
-        """获取用户关键词统计"""
+        """Get user keyword statistics"""
         try:
             if not self._is_cache_valid():
                 self._update_cache()
@@ -204,7 +204,7 @@ class EnhancedKeywordManager:
             user_keywords = self._keyword_cache[user_id]
             total_keywords = len(user_keywords)
             
-            # 计算最近24小时的关键词
+            # Calculate keywords from last 24 hours
             cutoff_time = datetime.now() - timedelta(hours=24)
             recent_count = 0
             
@@ -227,7 +227,7 @@ class EnhancedKeywordManager:
             return {"total_keywords": 0, "recent_keywords": 0}
 
     def get_all_users(self) -> List[str]:
-        """获取所有用户ID"""
+        """Get all user IDs"""
         try:
             if not self._is_cache_valid():
                 self._update_cache()
@@ -239,19 +239,19 @@ class EnhancedKeywordManager:
             return []
 
     def clear_cache(self):
-        """清除缓存"""
+        """Clear cache"""
         self._keyword_cache = {}
         self._last_cache_update = None
 
     def add_keyword_template(self, keyword: str, template: str):
-        """添加新的关键词模板"""
+        """Add new keyword template"""
         self.keyword_templates[keyword] = template
 
     def remove_keyword_template(self, keyword: str):
-        """移除关键词模板"""
+        """Remove keyword template"""
         if keyword in self.keyword_templates:
             del self.keyword_templates[keyword]
 
     def get_keyword_templates(self) -> Dict[str, str]:
-        """获取所有关键词模板"""
+        """Get all keyword templates"""
         return self.keyword_templates.copy() 

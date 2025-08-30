@@ -32,7 +32,7 @@ def get_validation_data_from_train_stacking():
     
     # 重新运行train_stacking的数据加载部分
     # 这样我们就能获得相同的验证集
-    data_pattern = "../../output_batches/eldercare_15000_dialogues_part*.jsonl"
+    data_pattern = "output_batches/eldercare_15000_dialogues_part*.jsonl"
     X_text, X_emo, y = train_stacking.load_multiple_files(data_pattern, max_files=10)
     
     # 使用相同的train_test_split参数

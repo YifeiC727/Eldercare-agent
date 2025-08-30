@@ -15,80 +15,80 @@ tokenizer = BertTokenizer.from_pretrained(bert_model_path)
 bert_model = BertModel.from_pretrained(bert_model_path)
 
 def load_multiple_files(file_pattern, max_files=10):
-    """加载多个JSONL文件并合并数据"""
+    """Load multiple JSONL files and merge data"""
     X_text_all, X_emo_all, y_all = [], [], []
     
-    # 获取所有匹配的文件
+    # Get all matching files
     all_files = glob.glob(file_pattern)
     
-    # 按照part数字顺序排序文件
+    # Sort files by part number order
     def extract_part_number(filename):
         import re
         match = re.search(r'part(\d+)', filename)
         return int(match.group(1)) if match else 0
     
     files = sorted(all_files, key=extract_part_number)[:max_files]
-    print(f"正在加载 {len(files)} 个文件...")
+    print(f"Loading {len(files)} files...")
     
     for i, file_path in enumerate(files):
-        print(f"加载文件 {i+1}/{len(files)}: {os.path.basename(file_path)}")
+        print(f"Loading file {i+1}/{len(files)}: {os.path.basename(file_path)}")
         try:
             X_text, X_emo, y = build_dataset(file_path, tokenizer, bert_model, max_turns=5)
             X_text_all.append(X_text)
             X_emo_all.append(X_emo)
             y_all.append(y)
-            print(f"  - 样本数: {len(X_text)}")
+            print(f"  - Sample count: {len(X_text)}")
         except Exception as e:
-            print(f"  - 加载失败: {e}")
+            print(f"  - Loading failed: {e}")
             continue
     
     if not X_text_all:
-        raise ValueError("没有成功加载任何数据文件")
+        raise ValueError("No data files loaded successfully")
     
-    # 合并所有数据
+    # Merge all data
     X_text_combined = np.concatenate(X_text_all, axis=0)
     X_emo_combined = np.concatenate(X_emo_all, axis=0)
     y_combined = np.concatenate(y_all, axis=0)
     
-    print(f"总样本数: {len(X_text_combined)}")
+    print(f"Total sample count: {len(X_text_combined)}")
     return X_text_combined, X_emo_combined, y_combined
 
-# 加载前10个文件的数据
-data_pattern = "../../output_batches/eldercare_15000_dialogues_part*.jsonl"
+# Load data from first 10 files
+data_pattern = "output_batches/eldercare_15000_dialogues_part*.jsonl"
 X_text, X_emo, y = load_multiple_files(data_pattern, max_files=10)
 
-# 8:2 训练/验证分割
-print("\n=== 数据集分割 ===")
+# 8:2 train/validation split
+print("\n=== Dataset Split ===")
 X_text_train, X_text_val, X_emo_train, X_emo_val, y_train, y_val = train_test_split(
     X_text, X_emo, y, test_size=0.2, random_state=42, shuffle=True
 )
 
-print(f"训练集样本数: {len(X_text_train)}")
-print(f"验证集样本数: {len(X_text_val)}")
+print(f"Training set sample count: {len(X_text_train)}")
+print(f"Validation set sample count: {len(X_text_val)}")
 
-# 训练基础模型（只在训练集上训练）
-print("\n=== 训练基础模型 ===")
-print("训练MLP模型...")
+# Train base models (only train on training set)
+print("\n=== Training Base Models ===")
+print("Training MLP model...")
 mlp_model = train_mlp(X_text_train, X_emo_train, y_train, epochs=10, lr=1e-3)
 
-print("训练LightGBM模型...")
+print("Training LightGBM model...")
 lgb_models = train_lgb(X_text_train, X_emo_train, y_train)
 
-print("训练Ridge模型...")
+print("Training Ridge model...")
 ridge_models = train_ridge(X_text_train, X_emo_train, y_train)
 
-# stacking融合（使用训练集）
-print("\n=== 训练Stacking模型 ===")
+# Stacking fusion (using training set)
+print("\n=== Training Stacking Model ===")
 base_models = [mlp_model, lgb_models, ridge_models]
 stacker = train_stacking(base_models, X_text_train, X_emo_train, y_train)
 
-# 保存模型
-print("\n=== 保存模型 ===")
+# Save models
+print("\n=== Saving Models ===")
 torch.save(mlp_model.state_dict(), "mlp_model.pt")
 joblib.dump(lgb_models, "lgb_models.pkl")
 joblib.dump(ridge_models, "ridge_models.pkl")
 joblib.dump(stacker, "stacker.pkl")
-print("模型已保存")
+print("Models saved")
 
 # 在训练集上评估
 print("\n=== 训练集评估 ===")

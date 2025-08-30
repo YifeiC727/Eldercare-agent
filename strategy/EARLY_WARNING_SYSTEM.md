@@ -1,45 +1,45 @@
-# 多维度早期预警系统
+# Multi-dimensional Early Warning System
 
-## 🚨 系统概述
+## 🚨 System Overview
 
-新的早期预警系统采用多维度检测机制，能够更精准地识别老年人的情绪风险，并提供分级响应策略。
+The new early warning system adopts a multi-dimensional detection mechanism that can more accurately identify emotional risks in elderly people and provide graded response strategies.
 
-## 📊 检测维度
+## 📊 Detection Dimensions
 
-### **1. 急性高风险检测**
-- **触发条件**: `current_sadness > 0.9`
-- **响应级别**: `severe`
-- **建议行动**: 立即关注，建议人工介入
-- **适用场景**: 用户表达极度悲伤或自伤倾向
+### **1. Acute High-Risk Detection**
+- **Trigger Condition**: `current_sadness > 0.9`
+- **Response Level**: `severe`
+- **Recommended Action**: Immediate attention, recommend human intervention
+- **Application Scenario**: User expresses extreme sadness or self-harm tendencies
 
-### **2. 持续性检测**
-- **连续高sadness**: 连续2-3次 `sadness > 0.8`
-- **响应级别**: `moderate` (2次) / `severe` (3次)
-- **建议行动**: 需要持续关注，建议增加关怀频率
+### **2. Persistent Detection**
+- **Continuous High Sadness**: 2-3 consecutive times `sadness > 0.8`
+- **Response Level**: `moderate` (2 times) / `severe` (3 times)
+- **Recommended Action**: Requires sustained attention, recommend increasing care frequency
 
-### **3. 趋势恶化检测**
-- **触发条件**: 近期平均 - 历史平均 > 0.3 且 近期平均 > 0.6
-- **响应级别**: `moderate`
-- **建议行动**: 情绪趋势恶化，建议主动关怀
-- **数据要求**: 至少6个历史数据点
+### **3. Trend Deterioration Detection**
+- **Trigger Condition**: Recent average - Historical average > 0.3 and Recent average > 0.6
+- **Response Level**: `moderate`
+- **Recommended Action**: Emotional trend deterioration, recommend proactive care
+- **Data Requirement**: At least 6 historical data points
 
-### **4. 长期趋势检测**
-- **触发条件**: 最近10次对话平均 `sadness > 0.7`
-- **响应级别**: `mild`
-- **建议行动**: 长期情绪偏低，建议定期关怀
+### **4. Long-term Trend Detection**
+- **Trigger Condition**: Average `sadness > 0.7` for last 10 conversations
+- **Response Level**: `mild`
+- **Recommended Action**: Long-term low emotions, recommend regular care
 
-### **5. 多维度综合检测**
-- **触发条件**: 
+### **5. Multi-dimensional Comprehensive Detection**
+- **Trigger Conditions**: 
   - `current_sadness > 0.6`
-  - `self_focus_freq > 0.15` (高自我关注，15%以上)
-  - `social_freq < 0.05` (低社交，5%以下)
-  - `sadness_LIWC_freq > 0.08` (负面情绪，8%以上)
-- **响应级别**: `moderate`
-- **建议行动**: 社交退缩倾向，建议鼓励社交活动
+  - `self_focus_freq > 0.15` (High self-focus, above 15%)
+  - `social_freq < 0.05` (Low social, below 5%)
+  - `sadness_LIWC_freq > 0.08` (Negative emotions, above 8%)
+- **Response Level**: `moderate`
+- **Recommended Action**: Social withdrawal tendency, recommend encouraging social activities
 
-## 🎯 响应策略
+## 🎯 Response Strategies
 
-### **Severe级别** (严重)
+### **Severe Level** (Critical)
 ```python
 {
     "语气": "紧急关切",
@@ -49,54 +49,54 @@
 }
 ```
 
-### **Moderate级别** (中等)
+### **Moderate Level** (Medium)
 ```python
 {
-    "语气": "关切引导",
-    "目标": "主动关怀，预防情绪恶化",
-    "引导语": "我注意到{reason}，你最近是不是遇到了一些困难？愿意和我聊聊吗？我会一直陪着你。",
-    "心理学依据": "早期干预可以有效预防情绪问题恶化。"
+    "Tone": "Concerned guidance",
+    "Objective": "Proactive care, prevent emotional deterioration",
+    "Guidance": "I noticed {reason}, have you encountered some difficulties recently? Would you like to talk to me? I'll always be here with you.",
+    "Psychological Basis": "Early intervention can effectively prevent emotional problems from worsening."
 }
 ```
 
-### **Mild级别** (轻微)
+### **Mild Level** (Light)
 ```python
 {
-    "语气": "温和关怀",
-    "目标": "增加关怀频率，预防问题发展",
-    "引导语": "我注意到{reason}，你最近心情怎么样？有什么想和我分享的吗？",
-    "心理学依据": "定期关怀有助于维持情绪稳定。"
+    "Tone": "Gentle care",
+    "Objective": "Increase care frequency, prevent problem development",
+    "Guidance": "I noticed {reason}, how have you been feeling lately? Is there anything you'd like to share with me?",
+    "Psychological Basis": "Regular care helps maintain emotional stability."
 }
 ```
 
-## 🔧 技术实现
+## 🔧 Technical Implementation
 
-### **数据结构**
+### **Data Structure**
 ```python
 warning_result = {
-    "triggered": bool,           # 是否触发预警
-    "level": str,               # 预警级别: normal/mild/moderate/severe
-    "reason": str,              # 触发原因
-    "suggested_action": str     # 建议行动
+    "triggered": bool,           # Whether warning is triggered
+    "level": str,               # Warning level: normal/mild/moderate/severe
+    "reason": str,              # Trigger reason
+    "suggested_action": str     # Suggested action
 }
 ```
 
-### **调用方式**
+### **Usage**
 ```python
-# 在select_strategy中调用
+# Call in select_strategy
 early_warning_result = selector.check_early_warning(
     window_sadness_scores=window_sadness_scores,
     current_sadness=sadness,
     liwc_scores=liwc_mapped
 )
 
-# 根据预警结果选择策略
+# Select strategy based on warning results
 if early_warning_result["triggered"]:
     warning_level = early_warning_result["level"]
-    # 选择对应级别的响应策略
+    # Select response strategy for corresponding level
 ```
 
-## 📈 优势特点
+## 📈 Advantages
 
 ### **1. 多维度检测**
 - 不仅看单一指标，而是综合考虑多个维度

@@ -17,28 +17,28 @@ class UserInfoManager:
     def __init__(self):
         self.use_file_storage = False
         
-        # 尝试连接MongoDB
+        # Try to connect to MongoDB
         if MONGODB_AVAILABLE:
             try:
                 mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
                 self.client = MongoClient(mongodb_uri, serverSelectionTimeoutMS=3000)
-                # 测试连接
+                # Test connection
                 self.client.admin.command('ping')
                 self.db = self.client["eldercare"]
                 self.users_collection = self.db["users"]
                 self.questions_collection = self.db["questions"]
                 self.conversations_collection = self.db["conversations"]
-                print("✅ MongoDB连接成功，使用数据库存储")
+                print("✅ MongoDB connection successful, using database storage")
                 self.use_file_storage = False
             except Exception as e:
-                print(f"⚠️ MongoDB连接失败: {e}")
-                print("🔄 切换到文件存储模式")
+                print(f"⚠️ MongoDB connection failed: {e}")
+                print("🔄 Switching to file storage mode")
                 self.use_file_storage = True
         else:
-            print("⚠️ pymongo未安装，使用文件存储模式")
+            print("⚠️ pymongo not installed, using file storage mode")
             self.use_file_storage = True
         
-        # 初始化文件存储
+        # Initialize file storage
         if self.use_file_storage:
             self.data_dir = "user_bio/data"
             os.makedirs(self.data_dir, exist_ok=True)
@@ -46,10 +46,10 @@ class UserInfoManager:
             self.questions_file = os.path.join(self.data_dir, "questions.json")
             self.conversations_file = os.path.join(self.data_dir, "conversations.json")
             self._init_file_storage()
-            print(f"📁 文件存储路径: {self.data_dir}")
+            print(f"📁 File storage path: {self.data_dir}")
 
     def _init_file_storage(self):
-        """初始化文件存储"""
+        """Initialize file storage"""
         for file_path in [self.users_file, self.questions_file, self.conversations_file]:
             if not os.path.exists(file_path):
                 with open(file_path, 'w', encoding='utf-8') as f:
@@ -102,7 +102,7 @@ class UserInfoManager:
         """生成唯一ID"""
         return str(ObjectId())
 
-    # 问题收集策略
+            # Question collection strategy
     QUESTION_STRATEGY = {
         "children_count": {
             "trigger": "family_related",
@@ -246,7 +246,7 @@ class UserInfoManager:
             return None
 
     def save_conversation(self, user_id: str, user_message: str, ai_reply: str, emotion_data: Dict = None):
-        """保存对话记录，同时更新strategy模块的对话历史"""
+        """Save conversation records while updating strategy module's conversation history"""
         try:
             conversation = {
                 "_id": self._generate_id(),
@@ -294,8 +294,8 @@ class UserInfoManager:
             return []
 
     def get_recent_conversation_text(self, user_id: str, limit: int = 5) -> str:
-        """获取最近的对话文本，用于strategy模块的history参数"""
-        """优化版本：只返回最近的对话文本，避免信息过载"""
+        """Get recent conversation text for strategy module's history parameter"""
+        """Optimized version: only return recent conversation text to avoid information overload"""
         try:
             conversations = self.get_conversation_history(user_id, limit)
             
@@ -437,7 +437,7 @@ class UserInfoManager:
             return False
 
     def should_ask_question(self, user_input: str, user_info: Dict, conversation_round: int) -> bool:
-        """判断是否应该询问问题"""
+        """Determine whether questions should be asked"""
         try:
             # 检查对话轮次
             if conversation_round < 3:
@@ -592,7 +592,7 @@ class UserInfoManager:
         return response.strip()
 
     def save_emotion_data(self, user_id: str, emotion_scores: Dict):
-        """保存情绪数据到CSV，支持用户隔离"""
+        """Save emotion data to CSV with user isolation support"""
         try:
             csv_file = "visualization/emotion_trend.csv"
             fieldnames = ["user_id", "timestamp", "anger", "sadness", "joy", "intensity"]

@@ -3,15 +3,17 @@ try:
     PYAUDIO_AVAILABLE = True
 except ImportError:
     PYAUDIO_AVAILABLE = False
-    print("警告: pyaudio 未安装，实时音频功能将不可用")
-    print("请运行: pip install pyaudio")
+    print("Warning: pyaudio not installed, real-time audio features will be unavailable")
+    print("Please run: pip install pyaudio")
 
 import numpy as np
 import librosa
 import threading
 import time
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
+# from sklearn.svm import SVC  # 注释掉SVM
+from sklearn.linear_model import LinearRegression
+from sklearn.multioutput import MultiOutputRegressor
 import queue
 import logging
 from typing import List, Dict, Callable, Any
@@ -22,39 +24,40 @@ logger = logging.getLogger(__name__)
 
 class VoiceEmotionAnalyzer:
     def __init__(self, emotion_labels: List[str] = None):
-        # 情绪标签 - 与emotion_recognizer保持一致
+        # Emotion labels - consistent with emotion_recognizer
         self.emotion_labels = emotion_labels or ["joy", "sadness", "anger", "intensity"]
         
-        # 音频参数
+        # Audio parameters
         if PYAUDIO_AVAILABLE:
             self.FORMAT = pyaudio.paInt16
         else:
             self.FORMAT = None
         self.CHANNELS = 1
-        self.RATE = 16000  # 采样率
-        self.CHUNK = 1024  # 缓冲大小
-        self.RECORD_SECONDS = 3  # 每次分析的音频片段长度
-        self.SILENCE_THRESHOLD = 0.001  #  silence detection threshold
+        self.RATE = 16000  # Sample rate
+        self.CHUNK = 1024  # Buffer size
+        self.RECORD_SECONDS = 3  # Audio segment length for each analysis
+        self.SILENCE_THRESHOLD = 0.001  # Silence detection threshold
         
-        # 特征提取和模型相关
+        # Feature extraction and model related
         self.scaler = StandardScaler()
-        self.model = SVC(kernel='rbf', C=10, gamma=0.1, probability=True)
+        # self.model = SVC(kernel='rbf', C=10, gamma=0.1, probability=True)  # Commented out SVM
+        self.model = MultiOutputRegressor(LinearRegression())  # Use multivariate linear regression
         self._is_recording = False
         self._audio_queue = queue.Queue()
         self._callback = None
         
-        # 初始音频输入
+        # Initialize audio input
         if PYAUDIO_AVAILABLE:
             self.audio = pyaudio.PyAudio()
         else:
             self.audio = None
 
     def extract_features(self, audio_data: np.ndarray) -> np.ndarray:
-        """从音频数据中提取音调和音色特征"""
-        # 转换为 librosa 的格式
-        y = audio_data.astype(np.float32) / 32768.0  # 转换为 [-1, 1] 范围
+        """Extract pitch and timbre features from audio data"""
+        # Convert to librosa format
+        y = audio_data.astype(np.float32) / 32768.0  # Convert to [-1, 1] range
         
-        # 音调 (pitch)
+        # Pitch
         f0, _, _ = librosa.pyin(
             y, 
             fmin=librosa.note_to_hz('C2'), 
@@ -66,24 +69,24 @@ class VoiceEmotionAnalyzer:
         pitch_max = np.nanmax(f0) if not np.isnan(f0).all() else 0
         pitch_min = np.nanmin(f0) if not np.isnan(f0).all() else 0
         
-        # 音色 (timbre)
-        # 梅尔频率倒谱系数
+        # Timbre
+        # Mel-frequency cepstral coefficients
         mfccs = librosa.feature.mfcc(y=y, sr=self.RATE, n_mfcc=13)
         mfccs_mean = np.mean(mfccs, axis=1)
         
-        # 频谱质心
+        # Spectral centroid
         spectral_centroid = librosa.feature.spectral_centroid(y=y, sr=self.RATE).mean()
         
-        # 频谱带宽
+        # Spectral bandwidth
         spectral_bandwidth = librosa.feature.spectral_bandwidth(y=y, sr=self.RATE).mean()
         
-        # 频谱滚降点
+        # Spectral rolloff
         spectral_rolloff = librosa.feature.spectral_rolloff(y=y, sr=self.RATE).mean()
         
-        # 零交叉率
+        # Zero crossing rate
         zero_crossing_rate = librosa.feature.zero_crossing_rate(y).mean()
         
-        # 整合所有特征
+        # Integrate all features
         features = np.concatenate([
             [pitch_mean, pitch_std, pitch_max, pitch_min],
             mfccs_mean,
@@ -93,23 +96,22 @@ class VoiceEmotionAnalyzer:
         return features
 
     def detect_emotion(self, audio_data: np.ndarray) -> Dict[str, Any]:
-        """分析音频数据&返回情绪结果 - 与emotion_recognizer格式完全一致"""
-        # 提取特征
+        """Analyze audio data & return emotion results - fully consistent with emotion_recognizer format"""
+        # Extract features
         features = self.extract_features(audio_data)
         
-        # 特征标准化
+        # Feature standardization
         features_scaled = self.scaler.transform([features])
         
-        # 预测情绪
-        emotion_idx = self.model.predict(features_scaled)[0]
-        probabilities = self.model.predict_proba(features_scaled)[0]
+        # Predict emotion - use linear regression to directly predict emotion scores
+        emotion_scores = self.model.predict(features_scaled)[0]
         
-        # 直接输出与emotion_recognizer完全一致的格式
+        # Direct output completely consistent with emotion_recognizer format
         result = {
-            "joy": float(probabilities[0]) if len(probabilities) > 0 else 0.0,
-            "sadness": float(probabilities[1]) if len(probabilities) > 1 else 0.0,
-            "anger": float(probabilities[2]) if len(probabilities) > 2 else 0.0,
-            "intensity": float(max(probabilities)) if len(probabilities) > 0 else 0.0
+            "joy": float(emotion_scores[0]),
+            "sadness": float(emotion_scores[1]),
+            "anger": float(emotion_scores[2]),
+            "intensity": float(emotion_scores[3])
         }
         
         # 确保所有值都在0-1范围内
@@ -306,37 +308,78 @@ class VoiceEmotionAnalyzer:
         logger.info("实时语音情绪分析已停止")
 
     def train_with_demo_data(self):
-        """使用演示数据训练模型（实际应用中应使用真实标注数据集）"""
-        logger.info("使用演示数据训练模型...")
+        """Train multi-output linear regression model using demo data (real annotated datasets should be used in practice)"""
+        logger.info("使用演示数据训练线性回归模型...")
         
-        # 生成演示数据（实际应用中应替换为真实的带标签音频特征）
-        # 这里模拟5种情绪，每种情绪10个样本
+        # Generate demo data - directly generate emotion scores instead of categories
         np.random.seed(42)
         X = []
         y = []
         
-        for emotion_idx in range(len(self.emotion_labels)):
-            # 为每种情绪生成特征（实际应用中应从真实音频提取）
-            for _ in range(10):
-                # 生成类似真实特征分布的随机数据
-                pitch_features = np.random.normal(loc=emotion_idx*50, scale=30, size=4)
-                mfcc_features = np.random.normal(loc=emotion_idx*0.5, scale=1.0, size=13)
-                spectral_features = np.random.normal(loc=emotion_idx*100, scale=50, size=4)
-                
-                features = np.concatenate([pitch_features, mfcc_features, spectral_features])
-                X.append(features)
-                y.append(emotion_idx)
+        # 生成更多样本以提高模型泛化能力
+        for _ in range(200):
+            # 生成音频特征 - 音调特征(4) + MFCC特征(13) + 频谱特征(4) = 21维
+            pitch_features = np.random.normal(loc=200, scale=100, size=4)  # 基频相关特征
+            mfcc_features = np.random.normal(loc=0, scale=2.0, size=13)    # MFCC特征
+            spectral_features = np.random.normal(loc=1500, scale=800, size=4)  # 频谱特征
+            
+            features = np.concatenate([pitch_features, mfcc_features, spectral_features])
+            
+            # 基于特征生成合理的情绪分数
+            # 使用音频特征的线性组合来模拟真实的情绪-特征关系
+            pitch_mean = features[0]
+            pitch_std = features[1]
+            spectral_centroid = features[17]  # 假设这是频谱质心
+            zero_crossing_rate = abs(features[20])  # 假设这是零交叉率
+            
+            # 生成情绪分数 - 基于音频特征的简单线性关系
+            joy = max(0.0, min(1.0, 
+                (pitch_mean - 150) / 300 + 
+                (spectral_centroid - 1000) / 2000 + 
+                np.random.normal(0, 0.1)))
+            
+            sadness = max(0.0, min(1.0, 
+                1.0 - (pitch_std / 100) - 
+                (zero_crossing_rate / 1000) + 
+                np.random.normal(0, 0.1)))
+            
+            anger = max(0.0, min(1.0, 
+                (pitch_std / 80) + 
+                (zero_crossing_rate / 800) + 
+                np.random.normal(0, 0.1)))
+            
+            # 计算强度作为最大情绪分数
+            intensity = max(joy, sadness, anger)
+            
+            # 确保情绪分数和不超过1（归一化处理）
+            total_emotion = joy + sadness + anger
+            if total_emotion > 1.0:
+                joy = joy / total_emotion
+                sadness = sadness / total_emotion
+                anger = anger / total_emotion
+            
+            emotion_scores = [joy, sadness, anger, intensity]
+            
+            X.append(features)
+            y.append(emotion_scores)
         
         X = np.array(X)
         y = np.array(y)
+        
+        logger.info(f"生成了 {len(X)} 个训练样本，特征维度: {X.shape[1]}")
         
         # 标准化特征
         self.scaler.fit(X)
         X_scaled = self.scaler.transform(X)
         
-        # 训练模型
+        # 训练多元线性回归模型
         self.model.fit(X_scaled, y)
-        logger.info("模型训练完成（演示数据）")
+        logger.info("线性回归模型训练完成（演示数据）")
+        
+        # 打印一些训练统计信息
+        train_pred = self.model.predict(X_scaled)
+        mse = np.mean((train_pred - y) ** 2)
+        logger.info(f"训练MSE: {mse:.4f}")
 
 if __name__ == "__main__":
     try:

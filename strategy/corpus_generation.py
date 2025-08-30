@@ -66,11 +66,11 @@ def generate_for_topic(topic, max_retries=3):
                 return []
 
 def clean_entry(entry):
-    # 如果 text 字段是嵌套的 JSON 字符串，尝试解析
+    # If text field is nested JSON string, try to parse it
     text = entry["text"]
     if isinstance(text, str) and text.strip().startswith("{") and "text" in text:
         try:
-            # 去掉结尾多余的逗号
+            # Remove trailing extra commas
             text_clean = re.sub(r'},?$', '}', text.strip())
             inner = json.loads(text_clean)
             entry["text"] = inner.get("text", entry["text"])
@@ -84,7 +84,7 @@ for topic in tqdm(topics):
         entries = generate_for_topic(topic)
         entries = [clean_entry(e) for e in entries if e.get("text") and e["text"].strip() not in ["]", "[", ""]]
         all_entries.extend(entries)
-        time.sleep(1.5) #防止api限流
+        time.sleep(1.5) # Prevent API rate limiting
 
     except Exception as e:
         print(f"生成话题{topic}时出错: {e}")

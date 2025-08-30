@@ -21,7 +21,7 @@ class EmotionRecognizer:
         self.api_key = os.getenv("CAMELLIA_KEY")
         self.api_url = "https://api.deepseek.com/v1/chat/completions"
         self.model = "deepseek-chat"
-        # === 临时禁用EmotionRegressor相关模型加载，避免报错 ===
+        # === Temporarily disable EmotionRegressor related model loading to avoid errors ===
         # bert_model_path = "bert-base-chinese"
         # mlp_model = EmotionRegressor(768, 16)
         # mlp_model.load_state_dict(torch.load("emotion_detection/recognizer_training/mlp_model.pt", map_location="cpu"))
@@ -193,9 +193,9 @@ class EmotionRecognizer:
     def analyze_rounds_liwc(self, dialogue):
         return [self.liwc_score(utt) for utt in dialogue]
 
-    # 在所有用到self.stacking_predictor的地方加判断
+    # Add judgment in all places where self.stacking_predictor is used
     def analyze_emotion(self, text):
-        # 只用LLM方案，暂不支持stacking_predictor
+        # Only use LLM solution, stacking_predictor not supported for now
         return self.analyze_emotion_deepseek(text)
 
 
@@ -219,7 +219,7 @@ if __name__ == "__main__":
     recog.print_window_scores(results)
 
     last = dialogue[-1]
-    # 只用analyze_emotion（已自动兜底）
+            # Only use analyze_emotion (automatic fallback)
     emotion = recog.analyze_emotion(last)
     print("\n===== DeepSeek 情绪识别（最近一句） =====")
     print(f"用户输入：{last}")

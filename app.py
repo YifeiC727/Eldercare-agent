@@ -28,11 +28,11 @@ speech_recognizer = BaiduSpeechRecognizer()
 emotion_recognizer = EmotionRecognizer()
 user_info_manager = UserInfoManager()
 
-# 延迟初始化的tone_emotion分析器
+# Lazily initialized tone_emotion analyzer
 tone_analyzer = None
 
 def get_tone_analyzer():
-    """延迟初始化tone_emotion分析器"""
+    """Lazily initialize tone_emotion analyzer"""
     global tone_analyzer
     if tone_analyzer is None:
         try:
@@ -47,41 +47,41 @@ def get_tone_analyzer():
 
 def get_dynamic_weights(text_length: int, audio_quality: float = 0.5, emotion_type: str = None):
     """
-    根据具体情况动态调整权重
+    Dynamically adjust weights based on specific conditions
     
     Args:
-        text_length: 文本长度
-        audio_quality: 音频质量评分 (0-1)，默认0.5
-        emotion_type: 情绪类型（可选）
+        text_length: Text length
+        audio_quality: Audio quality score (0-1), default 0.5
+        emotion_type: Emotion type (optional)
     """
     base_text_weight = 0.7
     base_tone_weight = 0.3
     
-    # 根据文本长度调整
-    if text_length < 10:  # 短文本，增加音调权重
+    # Adjust based on text length
+    if text_length < 10:  # Short text, increase tone weight
         text_weight = base_text_weight - 0.2
         tone_weight = base_tone_weight + 0.2
-    elif text_length > 50:  # 长文本，增加文本权重
+    elif text_length > 50:  # Long text, increase text weight
         text_weight = base_text_weight + 0.1
         tone_weight = base_tone_weight - 0.1
     else:
         text_weight = base_text_weight
         tone_weight = base_tone_weight
     
-    # 根据音频质量调整
-    if audio_quality < 0.5:  # 低质量音频，增加文本权重
+    # Adjust based on audio quality
+    if audio_quality < 0.5:  # Low quality audio, increase text weight
         text_weight += 0.1
         tone_weight -= 0.1
-    elif audio_quality > 0.8:  # 高质量音频，增加音调权重
+    elif audio_quality > 0.8:  # High quality audio, increase tone weight
         text_weight -= 0.1
         tone_weight += 0.1
     
-    # 根据情绪类型调整
-    if emotion_type in ['anger', 'excitement']:  # 音调明显的情绪
+    # Adjust based on emotion type
+    if emotion_type in ['anger', 'excitement']:  # Emotions with obvious tone
         text_weight -= 0.1
         tone_weight += 0.1
     
-    # 确保权重在合理范围内
+    # Ensure weights are in reasonable range
     text_weight = max(0.1, min(0.9, text_weight))
     tone_weight = max(0.1, min(0.9, tone_weight))
     
@@ -89,16 +89,16 @@ def get_dynamic_weights(text_length: int, audio_quality: float = 0.5, emotion_ty
 
 def combine_emotions(text_emotion: dict, tone_emotion: dict, text_weight: float, tone_weight: float) -> dict:
     """
-    结合文本情绪和音调情绪
+    Combine text emotion and tone emotion
     
     Args:
-        text_emotion: 文本情绪分析结果
-        tone_emotion: 音调情绪分析结果
-        text_weight: 文本情绪权重
-        tone_weight: 音调情绪权重
+        text_emotion: Text emotion analysis result
+        tone_emotion: Tone emotion analysis result
+        text_weight: Text emotion weight
+        tone_weight: Tone emotion weight
     
     Returns:
-        结合后的情绪结果
+        Combined emotion result
     """
     if not tone_emotion:
         return text_emotion
@@ -108,7 +108,7 @@ def combine_emotions(text_emotion: dict, tone_emotion: dict, text_weight: float,
         text_val = text_emotion.get(key, 0.0)
         tone_val = tone_emotion.get(key, 0.0)
         
-        # 加权平均
+        # Weighted average
         combined[key] = (text_val * text_weight + tone_val * tone_weight) / (text_weight + tone_weight)
         combined[key] = max(0.0, min(1.0, combined[key]))
     
@@ -116,49 +116,49 @@ def combine_emotions(text_emotion: dict, tone_emotion: dict, text_weight: float,
 
 def estimate_audio_quality(audio_path: str) -> float:
     """
-    估算音频质量评分 (0-1)
+    Estimate audio quality score (0-1)
     
     Args:
-        audio_path: 音频文件路径
+        audio_path: Audio file path
     
     Returns:
-        音频质量评分
+        Audio quality score
     """
     try:
         import librosa
         audio_data, sr = librosa.load(audio_path, sr=16000)
         
-        # 计算音频质量指标
-        # 1. 信噪比（简化版）
+        # Calculate audio quality metrics
+        # 1. Signal-to-noise ratio (simplified)
         rms = np.sqrt(np.mean(np.square(audio_data)))
-        snr_score = min(1.0, rms * 10)  # 简化的信噪比评分
+        snr_score = min(1.0, rms * 10)  # Simplified SNR score
         
-        # 2. 音频长度
+        # 2. Audio duration
         duration = len(audio_data) / sr
-        duration_score = min(1.0, duration / 10)  # 10秒为满分
+        duration_score = min(1.0, duration / 10)  # 10 seconds for full score
         
-        # 3. 频谱能量分布
+        # 3. Spectral energy distribution
         spectral_centroid = librosa.feature.spectral_centroid(y=audio_data, sr=sr).mean()
-        spectral_score = min(1.0, spectral_centroid / 2000)  # 2000Hz为满分
+        spectral_score = min(1.0, spectral_centroid / 2000)  # 2000Hz for full score
         
-        # 综合评分
+        # Comprehensive score
         quality_score = (snr_score * 0.4 + duration_score * 0.3 + spectral_score * 0.3)
         
         return max(0.1, min(1.0, quality_score))
         
     except Exception as e:
-        print(f"音频质量评估失败: {e}")
-        return 0.5  # 默认中等质量
+        print(f"Audio quality assessment failed: {e}")
+        return 0.5  # Default medium quality
 
-# 用户情绪历史数据存储 (内存中，生产环境建议使用数据库)
+# User emotion history data storage (in memory, recommend using database in production)
 user_emotion_history = {}
 
-# 用户预警历史数据存储 (内存中，生产环境建议使用数据库)
+# User warning history data storage (in memory, recommend using database in production)
 user_warning_history = {}
 
 @app.route("/")
 def index():
-    # 检查用户是否已登录
+    # Check if user is logged in
     if "user_id" in session:
         return render_template("index.html")
     else:
@@ -176,38 +176,38 @@ def chat_page():
 
 @app.route("/api/users", methods=["POST"])
 def create_user():
-    """创建新用户"""
+    """Create new user"""
     data = request.json
     user_ip = request.remote_addr
     
-    # 验证必填字段
+    # Validate required fields
     if not all(key in data for key in ["name", "age", "gender", "password"]):
-        return jsonify({"error": "请填写所有必填信息"}), 400
+        return jsonify({"error": "Please fill in all required information"}), 400
     
-    # 创建用户
+    # Create user
     user_id = user_info_manager.create_user(data, user_ip)
     session["user_id"] = user_id
     session["history"] = []
     
-    # 初始化用户情绪历史
+    # Initialize user emotion history
     user_emotion_history[user_id] = []
     user_warning_history[user_id] = []
     
     return jsonify({
         "status": "success",
         "user_id": user_id,
-        "message": "用户创建成功"
+        "message": "User created successfully"
     }), 201
 
 @app.route("/api/login", methods=["POST"])
 def login():
-    """用户登录"""
+    """User login"""
     data = request.json
     
     if not all(key in data for key in ["username", "password"]):
-        return jsonify({"error": "请输入用户名和密码"}), 400
+        return jsonify({"error": "Please enter username and password"}), 400
     
-    # 验证用户
+    # Verify user
     user = user_info_manager.authenticate_user(data["username"], data["password"])
     
     if user:
@@ -215,7 +215,7 @@ def login():
         session["user_id"] = user_id
         session["history"] = []
         
-        # 初始化用户情绪历史（如果不存在）
+        # Initialize user emotion history (if not exists)
         if user_id not in user_emotion_history:
             user_emotion_history[user_id] = []
         if user_id not in user_warning_history:
@@ -223,71 +223,71 @@ def login():
         
         return jsonify({
             "status": "success",
-            "message": "登录成功"
+            "message": "Login successful"
         }), 200
     else:
-        return jsonify({"error": "用户名或密码错误"}), 401
+        return jsonify({"error": "Username or password incorrect"}), 401
 
 @app.route("/api/logout")
 def logout():
-    """用户登出"""
+    """User logout"""
     session.clear()
-    return jsonify({"status": "success", "message": "已登出"}), 200
+    return jsonify({"status": "success", "message": "Logged out"}), 200
 
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
         if not request.json:
-            return jsonify({"error": "无效的请求格式"}), 400
+            return jsonify({"error": "Invalid request format"}), 400
         
         user_input = request.json.get("message")
         if not user_input:
-            return jsonify({"error": "消息内容不能为空"}), 400
+            return jsonify({"error": "Message content cannot be empty"}), 400
 
         user_id = session.get("user_id")
         if not user_id:
-            return jsonify({"error": "用户未登录"}), 401
+            return jsonify({"error": "User not logged in"}), 401
 
         history = session.get("history", [])
-        # 确保history中的所有元素都是字符串
+        # Ensure all elements in history are strings
         if not isinstance(history, list):
             history = []
-        # 过滤掉非字符串元素
+        # Filter out non-string elements
         history = [item for item in history if isinstance(item, str)]
         history.append(user_input)
 
-        # 情绪分析
+        # Emotion analysis
         try:
-            print(f"\n=== 情绪分析开始 ===")
-            print(f"用户输入: '{user_input}'")
+            print(f"\n=== Emotion Analysis Started ===")
+            print(f"User input: '{user_input}'")
             
             emotion_scores = emotion_recognizer.analyze_emotion_deepseek(user_input)
-            print(f"🧠 情绪检测结果: {emotion_scores}")
+            print(f"🧠 Emotion detection results: {emotion_scores}")
             
             emotion_intensity = emotion_scores.get("intensity", 0.5)
-            print(f"📊 情绪强度: {emotion_intensity}")
+            print(f"📊 Emotion intensity: {emotion_intensity}")
             
             liwc_score = emotion_recognizer.liwc_score(user_input)
             liwc_score = {k: float(v) for k, v in liwc_score.items()}
-            print(f"🔍 LIWC分析结果: {liwc_score}")
-            print(f"=== 情绪分析结束 ===\n")
+            print(f"🔍 LIWC analysis results: {liwc_score}")
+            print(f"=== Emotion Analysis Ended ===\n")
             
-            # 写入情绪趋势数据
+            # Write emotion trend data
             user_info_manager.save_emotion_data(user_id, emotion_scores)
             
-            # 更新用户情绪历史数据
+            # Update user emotion history data
             if user_id not in user_emotion_history:
                 user_emotion_history[user_id] = []
             
-            # 添加当前情绪数据到历史记录
+            # Add current emotion data to history
             current_sadness = emotion_scores.get("sadness", 0.0)
             user_emotion_history[user_id].append(current_sadness)
             
-            # 保持最近20次对话的情绪数据
+            # Keep recent 20 conversations' emotion data
             if len(user_emotion_history[user_id]) > 20:
                 user_emotion_history[user_id] = user_emotion_history[user_id][-20:]
             
-            # 更新长期悲伤日志
+            # Update long-term sadness log
             selector.log_long_term_sadness(current_sadness)
             
         except Exception as e:
@@ -297,15 +297,15 @@ def chat():
             liwc_score = {}
             current_sadness = 0.2
 
-        # 获取用户信息
+        # Get user information
         user_info = user_info_manager.get_user(user_id)
         print(f"DEBUG: user_id = {user_id}")
         print(f"DEBUG: user_info = {user_info}")
         
-        # 获取用户情绪历史窗口数据
+        # Get user emotion history window data
         window_sadness_scores = user_emotion_history.get(user_id, [])
         
-        # 策略选择（增加window_sadness_scores参数）
+        # Strategy selection (add window_sadness_scores parameter)
         print(f"=== 策略选择开始 ===")
         strategy = selector.select_strategy(
             emotion_scores, emotion_intensity, history, liwc_score, user_input, window_sadness_scores, user_info
@@ -313,11 +313,11 @@ def chat():
         print(f"🎯 选择的策略: {strategy.get('matched_rule', 'Unknown')}")
         print(f"💬 引导语: {strategy.get('引导语', 'N/A')}")
         
-        # 检查关键词预警结果
+        # Check keyword warning results
         keyword_warning_result = selector.check_critical_keywords(user_input)
         print(f"⚠️ 关键词预警: {keyword_warning_result}")
         
-        # 检查早期预警结果
+        # Check early warning results
         early_warning_result = selector.check_early_warning(
             window_sadness_scores, 
             emotion_scores.get("sadness", 0.0), 
@@ -326,11 +326,11 @@ def chat():
         print(f"🚨 早期预警: {early_warning_result}")
         print(f"=== 策略选择结束 ===\n")
         
-        # 记录预警历史（用户隔离）
+        # Record warning history (user isolation)
         from datetime import datetime
         current_time = datetime.now()
         
-        # 如果触发关键词预警，记录到用户预警历史
+        # If keyword warning is triggered, record to user warning history
         if keyword_warning_result["triggered"]:
             warning_record = {
                 "timestamp": current_time,
@@ -342,7 +342,7 @@ def chat():
             }
             user_warning_history[user_id].append(warning_record)
         
-        # 如果触发早期预警，记录到用户预警历史
+        # If early warning is triggered, record to user warning history
         if early_warning_result["triggered"]:
             warning_record = {
                 "timestamp": current_time,
@@ -353,17 +353,17 @@ def chat():
             }
             user_warning_history[user_id].append(warning_record)
         
-        # 根据预警级别调整响应策略
+        # Adjust response strategy based on warning level
         if keyword_warning_result["triggered"]:
-            # 关键词预警：最高优先级，直接使用策略选择器返回的结果
+            # Keyword warning: highest priority, directly use strategy selector's result
             strategy["keyword_warning"] = keyword_warning_result
         elif early_warning_result["triggered"]:
             warning_level = early_warning_result["level"]
             warning_reason = early_warning_result["reason"]
             
-            # 根据预警级别选择相应的响应策略
+            # Select corresponding response strategy based on warning level
             if warning_level == "severe":
-                # 严重预警：紧急关切
+                # Severe warning: urgent concern
                 strategy["引导语"] = f"我注意到{warning_reason}，这让我非常担心你的状态。你愿意和我详细聊聊吗？如果需要的话，我建议我们可以联系专业的心理支持资源。"
                 strategy["语气"] = "紧急关切"
                 strategy["目标"] = "立即情绪干预，建议转介专业支持"
@@ -373,7 +373,7 @@ def chat():
                     "action": "立即关注，建议人工介入"
                 }
             elif warning_level == "moderate":
-                # 中等预警：关切引导
+                # Moderate warning: caring guidance
                 strategy["引导语"] = f"我注意到{warning_reason}，你最近是不是遇到了一些困难？愿意和我聊聊吗？我会一直陪着你。"
                 strategy["语气"] = "关切引导"
                 strategy["目标"] = "主动关怀，预防情绪恶化"
@@ -383,7 +383,7 @@ def chat():
                     "action": "需要持续关注，建议增加关怀频率"
                 }
             elif warning_level == "mild":
-                # 轻微预警：温和关怀
+                # Mild warning: gentle care
                 strategy["引导语"] = f"我注意到{warning_reason}，你最近心情怎么样？有什么想和我分享的吗？"
                 strategy["语气"] = "温和关怀"
                 strategy["目标"] = "增加关怀频率，预防问题发展"
@@ -393,27 +393,27 @@ def chat():
                     "action": "长期情绪偏低，建议定期关怀"
                 }
         
-        # 生成回复
+        # Generate reply
         reply = generator.generate_response(user_input, strategy)
         
-        # 检查是否需要询问用户信息
+        # Check if need to ask user information
         next_question = strategy.get("next_question")
         if next_question:
             reply = user_info_manager.integrate_question_naturally(reply, next_question, user_input)
         
-        # 建议特殊情况下填写问卷
+        # Suggest questionnaire in special cases
         if strategy.get("recommend_gds", False):
             reply += "\n📝 建议你填写一个简短的自评问卷（GDS），这有助于我们更好地了解你的情绪状态。"
 
-        # 保存对话到数据库
+        # Save conversation to database
         user_info_manager.save_conversation(user_id, user_input, reply, emotion_scores)
         
-        # 确保reply是字符串类型
+        # Ensure reply is string type
         if isinstance(reply, str):
             history.append(reply)
         session["history"] = history
 
-        # 返回响应，包含预警信息
+        # Return response with warning information
         response_data = {
             "reply": reply,
             "emotion": emotion_scores,
@@ -421,13 +421,13 @@ def chat():
             "next_question": next_question
         }
         
-        # 如果有关键词预警，添加到响应中
+        # If there's keyword warning, add to response
         if keyword_warning_result["triggered"]:
             response_data["keyword_warning"] = keyword_warning_result
             response_data["show_alert"] = True
             response_data["alert_message"] = f"⚠️ 检测到危险关键词！\n{keyword_warning_result['reason']}\n建议立即人工介入。"
         
-        # 如果有早期预警，添加到响应中
+        # If there's early warning, add to response
         elif early_warning_result["triggered"]:
             response_data["early_warning"] = early_warning_result
             response_data["show_alert"] = True
@@ -448,7 +448,7 @@ def chat_audio():
         if audio_file.filename == '':
             return jsonify({'error': '没有选择文件'}), 400
         
-        # 检查文件大小
+        # Check file size
         audio_file.seek(0, 2)
         file_size = audio_file.tell()
         audio_file.seek(0)
@@ -456,14 +456,14 @@ def chat_audio():
         if file_size > 10 * 1024 * 1024:
             return jsonify({'error': '音频文件过大，请选择小于10MB的文件'}), 400
         
-        # 保存临时文件
+        # Save temporary file
         tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
         os.makedirs(tmp_dir, exist_ok=True)
         filename = secure_filename(audio_file.filename or 'audio.wav')
         temp_path = os.path.join(tmp_dir, filename)
         audio_file.save(temp_path)
         
-        # 音频转码
+        # Audio transcoding
         try:
             audio = AudioSegment.from_file(temp_path)
             audio = audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
@@ -471,7 +471,7 @@ def chat_audio():
         except Exception as e:
             print(f'音频转码失败: {e}')
         
-        # 语音识别
+        # Speech recognition
         try:
             text = speech_recognizer.recognize_file(temp_path)
         except Exception as e:
@@ -485,10 +485,10 @@ def chat_audio():
                 'reply': '抱歉，我没有听清楚您说的话，请您重新说一遍。'
             }), 200
         
-        # ===== 新增：音调情绪分析 =====
+        # ===== NEW: Tone emotion analysis =====
         tone_emotion_result = None
         try:
-            analyzer = get_tone_analyzer()  # 延迟初始化
+            analyzer = get_tone_analyzer()  # Lazy initialization
             if analyzer:
                 tone_emotion_result = analyzer.analyze_audio_file(temp_path)
                 print(f"🎵 音调情绪分析结果: {tone_emotion_result}")
@@ -498,16 +498,16 @@ def chat_audio():
             print(f"❌ 音调情绪分析失败: {e}")
             tone_emotion_result = None
         
-        # ===== 文本情绪分析 =====
+        # ===== Text emotion analysis =====
         try:
             text_emotion = emotion_recognizer.analyze_emotion_deepseek(text)
             print(f"📝 文本情绪分析结果: {text_emotion}")
             
-            # ===== 动态权重计算 =====
+            # ===== Dynamic weight calculation =====
             text_length = len(text)
             audio_quality = estimate_audio_quality(temp_path)
             
-            # 根据文本情绪判断情绪类型
+            # Determine emotion type based on text emotion
             emotion_type = None
             if text_emotion.get("anger", 0) > 0.6:
                 emotion_type = "anger"
@@ -517,7 +517,7 @@ def chat_audio():
             text_weight, tone_weight = get_dynamic_weights(text_length, audio_quality, emotion_type)
             print(f"⚖️ 动态权重 - 文本: {text_weight:.2f}, 音调: {tone_weight:.2f}")
             
-            # ===== 结合文本和音调情绪 =====
+            # ===== Combine text and tone emotions =====
             if tone_emotion_result:
                 combined_emotion = combine_emotions(text_emotion, tone_emotion_result, text_weight, tone_weight)
                 emotion_scores = combined_emotion
@@ -530,7 +530,7 @@ def chat_audio():
             liwc_score = emotion_recognizer.liwc_score(text)
             liwc_score = {k: float(v) for k, v in liwc_score.items()}
             
-            # 保存情绪数据
+            # Save emotion data
             user_id = session.get("user_id")
             if user_id:
                 user_info_manager.save_emotion_data(user_id, emotion_scores)
@@ -541,15 +541,15 @@ def chat_audio():
             emotion_intensity = 0.5
             liwc_score = {}
         
-        # 策略选择 - 使用优化后的对话历史
+        # Strategy selection - use optimized conversation history
         user_id = session.get("user_id")
         if user_id:
-            # 从数据库获取最近的对话历史，避免session中的历史信息过载
+            # Get recent conversation history from database to avoid session history overload
             recent_conversation_text = user_info_manager.get_recent_conversation_text(user_id, limit=5)
-            # 将当前用户输入添加到历史中
+            # Add current user input to history
             history = [recent_conversation_text, text] if recent_conversation_text else [text]
         else:
-            # 如果没有用户ID，使用session中的历史（向后兼容）
+            # If no user ID, use session history (backward compatibility)
             history = session.get("history", [])
         if not isinstance(history, list):
             history = []
@@ -563,24 +563,24 @@ def chat_audio():
         )
         reply = generator.generate_response(text, strategy)
         
-        # 检查是否需要询问用户信息
+        # Check if user information needs to be asked
         next_question = strategy.get("next_question")
         if next_question:
             reply = user_info_manager.integrate_question_naturally(reply, next_question, text)
         
-        # 保存对话记录到数据库
+        # Save conversation records to database
         if user_id:
             user_info_manager.save_conversation(user_id, text, reply, emotion_scores)
         
-        # 更新session中的历史（保持向后兼容）
+        # Update session history (maintain backward compatibility)
         if isinstance(reply, str):
             session_history = session.get("history", [])
             if not isinstance(session_history, list):
                 session_history = []
             session_history.append(text)
             session_history.append(reply)
-            # 限制session历史长度，避免内存占用过大
-            session_history = session_history[-10:]  # 只保留最近10轮对话
+            # Limit session history length to avoid excessive memory usage
+            session_history = session_history[-10:]  # Keep only the last 10 rounds of conversation
             session["history"] = session_history
         
         return jsonify({
@@ -588,9 +588,9 @@ def chat_audio():
             'reply': reply,
             'emotion': emotion_scores,
             'liwc': liwc_score,
-            'tone_emotion': tone_emotion_result,  # 新增：音调情绪结果
-            'text_emotion': text_emotion,  # 新增：原始文本情绪
-            'weights': {  # 新增：使用的权重信息
+            'tone_emotion': tone_emotion_result,  # New: tone emotion results
+            'text_emotion': text_emotion,  # New: original text emotion
+            'weights': {  # New: weight information used
                 'text_weight': text_weight,
                 'tone_weight': tone_weight,
                 'audio_quality': audio_quality,
@@ -611,9 +611,9 @@ def update_user_info(user_id):
     try:
         data = request.json
         
-        # 检查是否是手动编辑模式
+        # Check if it's manual edit mode
         if "field" in data and "value" in data:
-            # 手动编辑模式
+            # Manual edit mode
             field = data.get("field")
             value = data.get("value")
             

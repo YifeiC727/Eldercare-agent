@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录 - 智能陪伴助手</title>
+    <title>Login - ElderCare Companion</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
@@ -108,47 +108,47 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔐 用户登录</h1>
+        <h1>Sign In</h1>
         <p class="welcome-text">
-            欢迎回来！请输入您的登录信息。
+            Welcome back! Please enter your login information.
         </p>
         
         <form id="loginForm">
             <div class="form-group">
-                <label for="username">用户名</label>
-                <input type="text" id="username" name="username" required placeholder="请输入您的姓名">
-                <div class="error" id="usernameError">请输入用户名</div>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Enter your name">
+                <div class="error" id="usernameError">Please enter your username</div>
             </div>
             
             <div class="form-group">
-                <label for="password">密码</label>
-                <input type="password" id="password" name="password" required placeholder="请输入您的密码">
-                <div class="error" id="passwordError">请输入密码</div>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+                <div class="error" id="passwordError">Please enter your password</div>
             </div>
             
-            <button type="submit">登录</button>
+            <button type="submit">Login</button>
         </form>
         
         <div class="register-link">
-            还没有账户？<a href="/register">立即注册</a>
+            No account?<a href="/register">Register</a>
         </div>
     </div>
 
     <script>
-        // 表单提交
+        // Form submission
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // 清除之前的错误
+            // Clear previous errors
             document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
             
-            // 获取表单数据
+            // Get form data
             const formData = {
                 username: document.getElementById('username').value.trim(),
                 password: document.getElementById('password').value
             };
             
-            // 验证
+            // Validation
             let hasError = false;
             
             if (!formData.username) {
@@ -163,7 +163,7 @@
             
             if (hasError) return;
             
-            // 提交登录
+            // Submit login
             try {
                 const response = await fetch('/api/login', {
                     method: 'POST',
@@ -176,13 +176,13 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    // 登录成功，跳转到聊天页面
+                    // Login successful, redirect to chat page
                     window.location.href = '/chat';
                 } else {
-                    alert('登录失败：' + result.error);
+                    alert('Login failed：' + result.error);
                 }
             } catch (error) {
-                alert('网络错误，请重试');
+                alert('Network error, please try again');
                 console.error('Error:', error);
             }
         });

@@ -7,35 +7,35 @@ class KeywordMemoryManager:
     def __init__(self, file_path: str = "strategy/keyword_memory.json"):
         self.file_path = file_path
         self.memory = self._load_memory()
-        self.expiry_days = 7  # 关键词过期时间
+        self.expiry_days = 7  # Keyword expiration time
 
     def _load_memory(self) -> Dict:
-        """加载关键词记忆"""
+        """Load keyword memory"""
         try:
             if os.path.exists(self.file_path):
                 with open(self.file_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
-            print(f"加载关键词记忆失败: {e}")
-        return {}  # 改为空字典，不再使用_default
+            print(f"Failed to load keyword memory: {e}")
+        return {}  # Changed to empty dict, no longer using _default
 
     def _save_memory(self):
-        """保存关键词记忆"""
+        """Save keyword memory"""
         try:
             os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
             with open(self.file_path, 'w', encoding='utf-8') as f:
                 json.dump(self.memory, f, ensure_ascii=False, indent=2)
         except Exception as e:
-            print(f"保存关键词记忆失败: {e}")
+            print(f"Failed to save keyword memory: {e}")
 
     def _get_user_keywords(self, user_id: str) -> Dict:
-        """获取用户的关键词存储空间"""
+        """Get user's keyword storage space"""
         if user_id not in self.memory:
             self.memory[user_id] = {}
         return self.memory[user_id]
 
     def add_keyword(self, keyword: str, user_id: str, conversation_id: str = None):
-        """添加关键词，支持用户隔离"""
+        """Add keyword with user isolation support"""
         try:
             if not keyword or len(keyword.strip()) == 0 or not user_id:
                 return
@@ -43,14 +43,14 @@ class KeywordMemoryManager:
             keyword = keyword.strip()
             now = datetime.now()
             
-            # 获取用户的关键词存储空间
+            # Get user's keyword storage space
             user_keywords = self._get_user_keywords(user_id)
             
-            # 检查是否已存在相同的关键词
+            # Check if the same keyword already exists
             keyword_exists = False
             for key, data in user_keywords.items():
                 if data.get("keyword") == keyword:
-                    # 更新现有关键词的时间戳
+                    # Update existing keyword timestamp
                     data["timestamp"] = now.isoformat()
                     if conversation_id:
                         data["conversation_id"] = conversation_id
@@ -58,11 +58,11 @@ class KeywordMemoryManager:
                     keyword_exists = True
                     break
             
-            # 如果关键词已存在，直接返回
+            # If keyword already exists, return directly
             if keyword_exists:
                 return
         
-            # 添加新关键词
+            # Add new keyword
             new_id = str(len(user_keywords) + 1)
             keyword_data = {
                 "keyword": keyword,
@@ -85,7 +85,7 @@ class KeywordMemoryManager:
             keywords = []
             user_keywords = self.memory[user_id]
             
-            # 按时间戳排序
+            # Sort by timestamp
             sorted_keywords = sorted(
                 user_keywords.items(),
                 key=lambda x: x[1].get("timestamp", ""),
@@ -181,15 +181,15 @@ class KeywordMemoryManager:
                             if (now - timestamp).days > self.expiry_days:
                                 expired_keys.append(key)
                         except ValueError:
-                            # 如果时间戳格式错误，也删除
+                            # If timestamp format is wrong, delete as well
                             expired_keys.append(key)
                 
-                # 删除过期的关键词
+                # Delete expired keywords
                 for key in expired_keys:
                     del user_keywords[key]
                     total_cleaned += 1
                 
-                # 如果用户没有关键词了，删除用户条目
+                # If user has no keywords left, delete user entry
                 if not user_keywords:
                     del self.memory[uid]
             
@@ -247,7 +247,7 @@ class KeywordMemoryManager:
         """获取记忆统计信息，支持指定用户或全局统计"""
         try:
             if user_id:
-                # 单个用户统计
+                # Single user statistics
                 if user_id not in self.memory:
                     return {"total_keywords": 0, "user_id": user_id}
                     
@@ -259,11 +259,11 @@ class KeywordMemoryManager:
                     "user_id": user_id
                 }
             else:
-                # 全局统计
+                # Global statistics
                 total_users = len(self.memory)
                 total_keywords = sum(len(user_keywords) for user_keywords in self.memory.values())
                 
-                # 用户分布统计
+                # User distribution statistics
                 user_distribution = {}
                 for uid, user_keywords in self.memory.items():
                     user_distribution[uid] = len(user_keywords)
@@ -306,11 +306,11 @@ class KeywordMemoryManager:
             if "_default" in self.memory:
                 print("检测到旧格式数据，开始迁移...")
                 
-                # 创建默认用户ID
+                # Create default user ID
                 default_user_id = "default_user"
                 old_data = self.memory["_default"]
                 
-                # 迁移数据
+                # Migrate data
                 self.memory[default_user_id] = old_data
                 del self.memory["_default"]
                 

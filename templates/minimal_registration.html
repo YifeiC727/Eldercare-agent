@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>欢迎使用智能陪伴助手</title>
+    <title>Welcome - ElderCare Companion</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
@@ -134,69 +134,69 @@
 </head>
 <body>
     <div class="container">
-        <h1>🤖 智能陪伴助手</h1>
+        <h1>ElderCare Companion</h1>
         <p class="welcome-text">
-            欢迎使用我们的智能陪伴系统！为了更好地为您提供个性化服务，请填写以下基本信息。
+            Welcome! To personalize your experience, please provide a few basic details.
         </p>
         
         <form id="registrationForm">
             <div class="form-group">
-                <label for="name">您的姓名 *</label>
-                <input type="text" id="name" name="name" required placeholder="请输入您的姓名">
-                <div class="error" id="nameError">请输入您的姓名</div>
+                <label for="name">Name *</label>
+                <input type="text" id="name" name="name" required placeholder="Enter your name">
+                <div class="error" id="nameError">Please enter your name</div>
             </div>
             
             <div class="form-group">
-                <label for="age">您的年龄 *</label>
+                <label for="age">Age *</label>
                 <div class="range-container">
                     <input type="range" id="age" name="age" min="50" max="100" value="70">
-                    <div class="age-display" id="ageDisplay">70岁</div>
+                    <div class="age-display" id="ageDisplay">70</div>
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="gender">您的性别 *</label>
+                <label for="gender">Gender *</label>
                 <select id="gender" name="gender" required>
-                    <option value="">请选择性别</option>
-                    <option value="男">男</option>
-                    <option value="女">女</option>
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
                 </select>
-                <div class="error" id="genderError">请选择您的性别</div>
+                <div class="error" id="genderError">Please select your gender</div>
             </div>
             
             <div class="form-group">
-                <label for="password">设置密码 *</label>
-                <input type="password" id="password" name="password" required placeholder="请设置登录密码">
-                <div class="error" id="passwordError">请设置密码</div>
+                <label for="password">Set Password *</label>
+                <input type="password" id="password" name="password" required placeholder="Set your password">
+                <div class="error" id="passwordError">Please set a password</div>
             </div>
             
             <div class="form-group">
-                <label for="confirm_password">确认密码 *</label>
-                <input type="password" id="confirm_password" name="confirm_password" required placeholder="请再次输入密码">
-                <div class="error" id="confirmPasswordError">请确认密码</div>
+                <label for="confirm_password">Confirm Password *</label>
+                <input type="password" id="confirm_password" name="confirm_password" required placeholder="Re-enter your password">
+                <div class="error" id="confirmPasswordError">Please confirm your password</div>
             </div>
             
-            <button type="submit">开始聊天</button>
+            <button type="submit">Start Chat</button>
         </form>
     </div>
 
     <script>
-        // 年龄滑块显示
+        // Age slider display
         const ageSlider = document.getElementById('age');
         const ageDisplay = document.getElementById('ageDisplay');
         
         ageSlider.addEventListener('input', function() {
-            ageDisplay.textContent = this.value + '岁';
+            ageDisplay.textContent = this.value;
         });
         
-        // 表单提交
+        // Form submission
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // 清除之前的错误
+            // Clear previous errors
             document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
             
-            // 获取表单数据
+            // Get form data
             const formData = {
                 name: document.getElementById('name').value.trim(),
                 age: parseInt(document.getElementById('age').value),
@@ -205,7 +205,7 @@
                 confirm_password: document.getElementById('confirm_password').value
             };
             
-            // 验证
+            // Validation
             let hasError = false;
             
             if (!formData.name) {
@@ -230,13 +230,13 @@
             
             if (formData.password !== formData.confirm_password) {
                 document.getElementById('confirmPasswordError').style.display = 'block';
-                document.getElementById('confirmPasswordError').textContent = '两次输入的密码不一致';
+                document.getElementById('confirmPasswordError').textContent = 'Passwords do not match';
                 hasError = true;
             }
             
             if (hasError) return;
             
-            // 提交数据
+            // Submit data
             try {
                 const response = await fetch('/api/users', {
                     method: 'POST',
@@ -249,13 +249,13 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    // 跳转到聊天页面
+                    // Redirect to chat page
                     window.location.href = '/chat';
                 } else {
-                    alert('注册失败：' + result.error);
+                    alert('Registration failed: ' + result.error);
                 }
             } catch (error) {
-                alert('网络错误，请重试');
+                alert('Network error, please try again');
                 console.error('Error:', error);
             }
         });

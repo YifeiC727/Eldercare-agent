@@ -12,14 +12,14 @@ from sentence_transformers import SentenceTransformer, util
 
 class StrategySelector:
     def __init__(self, performance_mode="fast"):
-        # 加载性能配置
+        # Load performance configuration
         self.performance_config = get_performance_config(performance_mode)
         self.elder_topics = [
             "跳广场舞", "早晨遛弯", "晒太阳养花", "孩子最近有没有来看你",
             "孙子孙女的趣事", "做饭、做包子、熬汤", "以前的老朋友、老同事", "以前你最喜欢的电视剧/演员"
         ]
         
-        # 关键词预警系统
+        # Keyword early warning system
         self.critical_keywords = [
             "想死", "不想活了", "死了算了", "活不下去了", "结束生命", "自杀", "自尽",
             "跳楼", "上吊", "割腕", "吃药", "安眠药", "毒药", "结束自己",
@@ -41,45 +41,45 @@ class StrategySelector:
             "电视剧": "你喜欢的那个老电视剧最近又重播了，看到的时候会不会有些怀旧的感觉？",
             "老伴": "你前面说起老伴，听起来你们有很多共同的回忆。",
             "年轻时候": "你讲到年轻时候的经历，真是特别有意思。",
-            # 新增健康相关
+            # Added health-related
             "血压": "你最近量血压了吗？有没有注意到什么变化？",
             "糖尿病": "你平时饮食上会特别注意吗？如果有需要可以和我聊聊。",
             "感冒": "最近天气变化大，你有没有注意保暖，身体还好吗？",
             "睡眠": "你最近睡得怎么样？有没有什么困扰你的地方？",
-            # 新增家庭相关
+            # Added family-related
             "老伴": "你和老伴最近有没有一起做什么有趣的事情？",
             "孙女": "你和孙女最近有没有什么开心的事情？",
             '孙子': "你和孙子最近有没有什么开心的事情？",
             "家人": "家人最近有没有来看你？和他们在一起的时候开心吗？",
             "儿子": "你的儿子最近有没有来看你？和他们在一起的时候开心吗？",
             "女儿": "你的女儿最近有没有来看你？和他们在一起的时候开心吗？",
-            # 兴趣与生活
+            # Interests and life
             "唱歌": "你还喜欢唱歌吗？有没有最近常唱的歌？",
             "跳舞": "你最近还跳广场舞吗？身体感觉怎么样？",
             "书法": "你最近有没有练书法？写字的时候心情会不会更平静？",
             "摄影": "你最近有没有拍照？拍到什么有趣的画面了吗？",
             "旅游": "你最近有没有出去旅游？有没有什么有趣的见闻？",
-            # 饮食与日常
+            # Diet and daily life
             "做饭": "你最近做了什么好吃的？有没有什么拿手菜？",
             "包子": "你做的包子一定很好吃，有没有什么独家秘诀？",
             "汤": "最近天气凉了，喝点热汤会不会舒服一些？",
             "水果": "你最近喜欢吃什么水果？",
-            # 天气与出行
+            # Weather and travel
             "下雨": "最近下雨了，出门要注意安全哦。",
             "天气": "最近天气变化大，要注意添衣保暖。",
             "出门": "你最近出门散步了吗？有没有遇到什么有趣的事情？",
-            # 节日与回忆
+            # Festivals and memories
             "春节": "春节快到了，你有什么计划吗？家里会不会很热闹？",
             "中秋": "中秋节的时候有没有和家人一起吃月饼？",
             "回忆": "你刚刚提到的回忆真美好，有没有什么特别想分享的？",
-            # 其他关怀
+            # Other care
             "孤独": "有时候会觉得孤单吗？如果有心事可以和我聊聊。",
             "开心": "听到你开心我也很高兴，有什么开心的事可以多和我分享。",
             "难过": "如果你有点难过，可以和我说说，我会一直陪着你。"
         }
         self.memory = KeywordMemoryManager()
         self.rag_strategy = RAGKeywordStrategy()
-        # 实体识别器 - 根据性能配置初始化
+        # Entity recognizer - initialize based on performance configuration
         self.entity_recognizer = EnhancedEntityRecognizer(
             use_professional_libs=True,
             enable_entity_recognition=self.performance_config["enable_entity_recognition"],
@@ -87,7 +87,7 @@ class StrategySelector:
         )
         self.long_term_sadness_log = []
 
-        # 初始化embed_model，如果失败则设置为None
+        # Initialize embed_model, set to None if failed
         try:
             self.embed_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
         except Exception as e:
@@ -95,7 +95,7 @@ class StrategySelector:
             self.embed_model = None
 
     def enrich_prompt_with_keyword_empathy(self, base_prompt: str, user_input: str = None, user_id: str = None) -> str:
-        """优化版本：智能关键词共情，支持用户隔离，避免虚假记忆"""
+        """Optimized version: Intelligent keyword empathy with user isolation and false memory prevention"""
         try:
             if not user_id:
                 return base_prompt
@@ -106,7 +106,7 @@ class StrategySelector:
             if not recent_keywords:
                 return base_prompt
 
-            # 1. 语义相似度排序（如果用户输入存在）
+            # 1. Semantic similarity ranking (if user input exists)
             relevant_keywords = []
             if user_input is not None and self.embed_model is not None:
                 try:
@@ -115,54 +115,54 @@ class StrategySelector:
                     
                     similarities = util.pytorch_cos_sim(input_emb, keyword_embs)[0]
                     
-                    # 只选择相关性高的关键词（相似度 > 0.3）
+                    # Only select highly relevant keywords (similarity > 0.3)
                     for i, similarity in enumerate(similarities):
                         if similarity > 0.3:
                             relevant_keywords.append((recent_keywords[i], similarity.item()))
                     
-                    # 按相似度排序，取前3个
+                    # Sort by similarity, take top 3
                     relevant_keywords.sort(key=lambda x: x[1], reverse=True)
                     relevant_keywords = relevant_keywords[:3]
                     
                 except Exception as e:
                     print(f"Warning: Semantic matching failed: {e}")
-                    # 如果语义匹配失败，使用传统方法
+                    # If semantic matching fails, use traditional method
                     relevant_keywords = [(kw, 0.5) for kw in recent_keywords[:3]]
             else:
-                # 没有用户输入时，使用最近的关键词
+                # When no user input, use recent keywords
                 relevant_keywords = [(kw, 0.5) for kw in recent_keywords[:3]]
 
-            # 2. 构建共情语句，避免虚假记忆
+            # 2. Build empathy statements, avoid false memories
             empathy_statements = []
             for keyword, similarity in relevant_keywords:
                 if keyword in self.keyword_to_empathy_templates:
                     template = self.keyword_to_empathy_templates[keyword]
                     
-                    # 检查模板是否包含可能造成虚假记忆的词汇
+                    # Check if template contains phrases that might cause false memories
                     problematic_phrases = [
                         "你之前提到", "你前面说过", "你曾提起", "你前面说起",
                         "你讲到", "你刚刚提到的", "你前面说"
                     ]
             
-                    # 如果模板包含可能造成虚假记忆的词汇，进行修改
+                    # If template contains phrases that might cause false memories, modify them
                     safe_template = template
                     for phrase in problematic_phrases:
                         if phrase in safe_template:
-                            # 替换为更安全的表达
+                            # Replace with safer expressions
                             safe_template = safe_template.replace(phrase, "关于")
                             break
                     
                     empathy_statements.append(safe_template)
             
-            # 3. 限制共情语句数量，避免信息过载
+            # 3. Limit number of empathy statements to avoid information overload
             if empathy_statements:
-                # 最多添加2个共情语句
+                # Add at most 2 empathy statements
                 selected_empathy = empathy_statements[:2]
                 empathy_text = " ".join(selected_empathy)
                 
-                # 检查基础提示是否已经很长
+                # Check if base prompt is already long
                 if len(base_prompt) > 100:
-                    # 如果基础提示很长，简化共情语句
+                    # If base prompt is long, simplify empathy statements
                     empathy_text = empathy_statements[0] if empathy_statements else ""
                 
                 return f"{base_prompt} {empathy_text}".strip()
@@ -174,11 +174,11 @@ class StrategySelector:
             return base_prompt
 
     def should_use_rag(self, user_input: str, keywords: List[str]) -> bool:
-        """判断是否应该使用RAG检索"""
+        """Determine whether RAG retrieval should be used"""
         if not user_input or not keywords:
             return False
         
-        # 只在用户明确询问特定话题时才使用RAG
+        # Only use RAG when user explicitly asks about specific topics
         rag_trigger_keywords = [
             "怎么", "如何", "为什么", "什么", "哪些", "建议", "推荐", "方法", "技巧",
             "健康", "锻炼", "饮食", "睡眠", "活动", "兴趣", "爱好", "朋友", "家人"
@@ -188,11 +188,11 @@ class StrategySelector:
         return any(trigger in user_input_lower for trigger in rag_trigger_keywords)
 
     def is_rag_content_appropriate(self, user_input: str, rag_content: str) -> bool:
-        """判断RAG内容是否合适"""
+        """Determine if RAG content is appropriate"""
         if not user_input or not rag_content:
             return False
         
-        # 避免RAG内容与用户输入冲突
+        # Avoid conflicts between RAG content and user input
         inappropriate_patterns = [
             "您上次提到", "我记得您", "您说过", "您之前"
         ]
@@ -202,7 +202,7 @@ class StrategySelector:
 
     def insert_elder_topic_safely(self, prompt: str, history: List[str]) -> str:
         try:
-            # 确保history中的所有元素都是字符串
+            # Ensure all elements in history are strings
             text_parts = []
             for item in history:
                 if isinstance(item, str):
@@ -229,17 +229,17 @@ class StrategySelector:
             "neutral": ["请加入一句能让用户觉得你在认真听他们讲故事的话。", "表现出你对对方回忆的兴趣与尊重。"]
         }
         insert = prompts.get(emotion_type, prompts["neutral"])
-        return f"{base} ##共情提示：{insert}"
+        return f"{base} ##Empathy Tips: {insert}"
 
     def update_context_keywords(self, history: List[str], user_id: str = None, conversation_id: str = None):
-        """优化版本：智能更新上下文关键词，避免重复和无关信息"""
+        """Optimized version: Intelligently update context keywords, avoiding duplication and irrelevant information"""
         try:
             self.memory.clear_expired()
             
-            # 只处理最近的3-5轮对话，避免历史信息干扰
+            # Only process the last 3-5 rounds of conversation to avoid historical information interference
             recent_history = history[-6:] if len(history) > 6 else history
             
-            # 确保所有元素都是字符串
+            # Ensure all elements are strings
             text_parts = []
             for item in recent_history:
                 if isinstance(item, str):
@@ -250,19 +250,19 @@ class StrategySelector:
                 
             text = " ".join(text_parts)
             
-            # 1. 智能关键词提取，避免重复
+            # 1. Intelligent keyword extraction, avoiding duplication
             extracted_keywords = set()
             
-            # 传统keyword匹配，但限制数量
+            # Traditional keyword matching, but with quantity limits
             for keyword in self.keyword_to_empathy_templates:
                 if keyword in text and keyword not in extracted_keywords:
-                    # 检查关键词是否在最近对话中频繁出现
+                    # Check if keyword appears frequently in recent conversations
                     keyword_count = text.count(keyword)
-                    if keyword_count <= 3:  # 避免过度重复的关键词
+                    if keyword_count <= 3:  # Avoid excessively repeated keywords
                         self.memory.add_keyword(keyword, conversation_id=conversation_id, user_id=user_id)
                         extracted_keywords.add(keyword)
             
-            # 2. 实体识别增强（根据性能配置）
+            # 2. Enhanced entity recognition (based on performance configuration)
             if self.performance_config["enable_entity_recognition"] or self.performance_config["enable_semantic_matching"]:
                 entities = self.entity_recognizer.extract_entities(
                     text, 
@@ -270,15 +270,15 @@ class StrategySelector:
                     semantic_threshold=self.performance_config["semantic_threshold"]
                 )
                 
-                # 限制实体数量，避免信息过载
+                # Limit entity count to avoid information overload
                 entity_count = 0
                 for entity in entities:
-                    if entity_count >= 5:  # 最多提取5个实体
+                    if entity_count >= 5:  # Extract at most 5 entities
                         break
                         
                     entity_text = entity.get("text")
                     if isinstance(entity_text, str) and entity_text not in extracted_keywords:
-                        # 避免重复添加已存在的keyword
+                        # Avoid repeatedly adding existing keywords
                         if entity_text not in [kw for kw in self.keyword_to_empathy_templates.keys()]:
                             self.memory.add_keyword(entity_text, conversation_id=conversation_id, user_id=user_id)
                             extracted_keywords.add(entity_text)
@@ -313,7 +313,7 @@ class StrategySelector:
             "suggested_action": ""
         }
         
-        # 1. 急性高风险检测 (当前sadness极高)
+        # 1. Acute high-risk detection (extremely high current sadness)
         if current_sadness > 0.9:
             warning_result.update({
                 "triggered": True,
@@ -324,12 +324,12 @@ class StrategySelector:
             })
             return warning_result
         
-        # 2. 持续性检测 (基于window_sadness_scores)
+        # 2. Persistent detection (based on window_sadness_scores)
         if window_sadness_scores is not None and isinstance(window_sadness_scores, list) and len(window_sadness_scores) > 0:
             try:
                 recent_scores = window_sadness_scores[-3:] if len(window_sadness_scores) >= 3 else window_sadness_scores
                 
-                # 2.1 连续高sadness检测
+                # 2.1 Consecutive high sadness detection
                 high_sadness_count = sum(1 for score in recent_scores if score > 0.8)
                 if high_sadness_count >= 2:
                     warning_result.update({
@@ -360,7 +360,7 @@ class StrategySelector:
             except Exception as e:
                 print(f"Warning: Failed to process window_sadness_scores: {e}")
         
-        # 3. 长期趋势检测 (基于long_term_sadness_log)
+        # 3. Long-term trend detection (based on long_term_sadness_log)
         if len(self.long_term_sadness_log) >= 10:
             try:
                 # 确保long_term_sadness_log是列表类型
@@ -394,9 +394,9 @@ class StrategySelector:
             except Exception as e:
                 print(f"Warning: Failed to process long_term_sadness_log: {e}")
         
-        # 4. 多维度综合检测 (结合LIWC特征)
+        # 4. Multi-dimensional comprehensive detection (combining LIWC features)
         if liwc_scores and current_sadness > 0.6:
-            # 高自我关注 + 低社交 + 高负面情绪
+            # High self-focus + Low social + High negative emotions
             if (liwc_scores.get("self_focus_freq", 0) > 0.15 and 
                 liwc_scores.get("social_freq", 0) < 0.05 and
                 liwc_scores.get("sadness_LIWC_freq", 0) > 0.08):
@@ -412,7 +412,7 @@ class StrategySelector:
         return warning_result
 
     def check_critical_keywords(self, user_input: str) -> dict:
-        """检查关键词预警"""
+        """Check keyword warnings"""
         if not user_input:
             return {"triggered": False, "keywords": [], "level": "normal"}
         
@@ -458,7 +458,7 @@ class StrategySelector:
             return True
 
     def select_strategy(self, emotion_scores: Dict[str, float], emotion_intensity: float, history: List[str], liwc: Dict[str, float], user_input: str = "", window_sadness_scores: list = None, user_info: Dict = None) -> Dict:
-        """选择最适合的策略"""
+        """Select the most appropriate strategy"""
         
         # 调试信息
         print(f"DEBUG: user_input = '{user_input}'")
@@ -704,7 +704,7 @@ class StrategySelector:
         return candidate
 
     def is_personal_info_query(self, user_input: str) -> bool:
-        """检查是否是个人信息查询"""
+        """Check if it's a personal information query"""
         if not user_input:
             return False
         
@@ -757,7 +757,7 @@ class StrategySelector:
         return False
 
     def handle_personal_info_query(self, user_input: str, user_info: Dict) -> Dict:
-        """处理个人信息查询"""
+        """Handle personal information queries"""
         basic_info = user_info.get("basic_info", {})
         family_relation = user_info.get("family_relation", {})
         living_habits = user_info.get("living_habits", {})
@@ -894,7 +894,7 @@ class StrategySelector:
         }
 
     def personalize_prompt(self, base_prompt: str, user_info: Dict) -> str:
-        """根据用户信息个性化提示"""
+        """Personalize prompts based on user information"""
         
         basic_info = user_info.get("basic_info", {})
         family_relation = user_info.get("family_relation", {})

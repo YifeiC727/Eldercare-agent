@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-增强实体识别模块
-使用专业库和词典进行更全面的实体识别
+Enhanced entity recognition module
+Use professional libraries and dictionaries for more comprehensive entity recognition
 """
 
 import re
@@ -18,53 +18,53 @@ try:
     JIEBA_AVAILABLE = True
 except ImportError:
     JIEBA_AVAILABLE = False
-    print("警告: jieba未安装，将使用基础模式")
+    print("Warning: jieba not installed, will use basic mode")
 
 try:
     import hanlp
     HANLP_AVAILABLE = True
 except ImportError:
     HANLP_AVAILABLE = False
-    print("警告: hanlp未安装，将使用基础模式")
+    print("Warning: hanlp not installed, will use basic mode")
 
 class EnhancedEntityRecognizer:
     def __init__(self, use_professional_libs=True, enable_entity_recognition=True, enable_semantic_matching=True):
-        """初始化增强实体识别器"""
+        """Initialize enhanced entity recognizer"""
         self.use_professional_libs = use_professional_libs
         self.enable_entity_recognition = enable_entity_recognition
         self.enable_semantic_matching = enable_semantic_matching
         
-        # 加载语义模型
+        # Load semantic model
         self.embed_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
         
-        # 加载专业库
+        # Load professional libraries
         if use_professional_libs and enable_entity_recognition:
             self._init_professional_libs()
         
-        # 加载专业词典
+        # Load professional dictionaries
         self._load_dictionaries()
         
-        # 预计算嵌入向量
+        # Precompute embedding vectors
         if enable_semantic_matching:
             self._precompute_embeddings()
     
     def _init_professional_libs(self):
-        """初始化专业库"""
+        """Initialize professional libraries"""
         if JIEBA_AVAILABLE:
-            # 加载自定义词典
+            # Load custom dictionaries
             self._load_jieba_dicts()
         
         if HANLP_AVAILABLE:
             try:
-                # 加载HanLP NER模型
+                # Load HanLP NER model
                 self.hanlp_ner = hanlp.load('MSRA_NER_ELECTRA_SMALL_ZH')
             except Exception as e:
                 print(f"HanLP加载失败: {e}")
                 self.hanlp_ner = None
     
     def _load_jieba_dicts(self):
-        """加载jieba自定义词典"""
-        # 医疗健康词典
+        """Load jieba custom dictionaries"""
+        # Medical health dictionary
         medical_words = [
             "高血压", "糖尿病", "心脏病", "关节炎", "骨质疏松", "白内障", "青光眼", 
             "中风", "癌症", "感冒", "肺炎", "哮喘", "胃炎", "肝炎", "肾炎",
@@ -72,7 +72,7 @@ class EnhancedEntityRecognizer:
             "血压计", "血糖仪", "体温计", "听诊器", "心电图", "B超", "CT", "核磁共振"
         ]
         
-        # 老年人常用词汇
+        # Common elderly vocabulary
         elder_words = [
             "孙子", "孙女", "外孙", "外孙女", "老伴", "老伴儿", "老同事", "老朋友",
             "广场舞", "太极拳", "麻将", "象棋", "围棋", "钓鱼", "养花", "养鸟",
@@ -80,13 +80,13 @@ class EnhancedEntityRecognizer:
             "退休金", "养老金", "医保", "社保", "低保"
         ]
         
-        # 添加到jieba词典
+        # Add to jieba dictionary
         for word in medical_words + elder_words:
             jieba.add_word(word)
     
     def _load_dictionaries(self):
-        """加载专业词典"""
-        # 医疗实体词典
+        """Load professional dictionaries"""
+        # Medical entity dictionary
         self.medical_dict = {
             "diseases": [
                 "高血压", "糖尿病", "心脏病", "冠心病", "心肌梗塞", "脑梗塞", "脑出血",
@@ -112,7 +112,7 @@ class EnhancedEntityRecognizer:
             ]
         }
         
-        # 老年人生活词典
+        # Elderly life dictionary
         self.elder_life_dict = {
             "family": [
                 "儿子", "女儿", "孙子", "孙女", "外孙", "外孙女", "老伴", "老伴儿",
@@ -137,11 +137,11 @@ class EnhancedEntityRecognizer:
         }
     
     def _precompute_embeddings(self):
-        """预计算所有关键词的嵌入向量"""
+        """Precompute embedding vectors for all keywords"""
         all_keywords = []
         self.keyword_to_category = {}
         
-        # 合并所有词典
+        # Merge all dictionaries
         for category, words in self.medical_dict.items():
             for word in words:
                 all_keywords.append(word)
@@ -168,7 +168,7 @@ class EnhancedEntityRecognizer:
         words = pseg.cut(text)
         
         for word, flag in words:
-            if len(word) > 1:  # 过滤单字
+            if len(word) > 1:  # Filter single characters
                 entity_type = self._map_jieba_pos_to_entity_type(flag)
                 if entity_type:
                     entities.append({
@@ -207,13 +207,13 @@ class EnhancedEntityRecognizer:
     def _map_jieba_pos_to_entity_type(self, pos: str) -> Optional[str]:
         """映射jieba词性到实体类型"""
         pos_mapping = {
-            "nr": "PERSON",      # 人名
-            "ns": "LOCATION",    # 地名
-            "nt": "ORGANIZATION", # 机构名
-            "nz": "OTHER",       # 其他专名
-            "n": "NOUN",         # 名词
-            "v": "VERB",         # 动词
-            "a": "ADJECTIVE"     # 形容词
+                    "nr": "PERSON",      # Person name
+        "ns": "LOCATION",    # Place name
+        "nt": "ORGANIZATION", # Organization name
+        "nz": "OTHER",       # Other proper nouns
+        "n": "NOUN",         # Noun
+        "v": "VERB",         # Verb
+        "a": "ADJECTIVE"     # Adjective
         }
         return pos_mapping.get(pos, None)
     
@@ -225,10 +225,10 @@ class EnhancedEntityRecognizer:
         entities = []
         text_embedding = self.embed_model.encode(text, normalize_embeddings=True)
         
-        # 计算相似度
+        # Calculate similarity
         similarities = util.cos_sim(text_embedding, self.keyword_embeddings)[0].tolist()
         
-        # 找到相似度超过阈值的关键词
+        # Find keywords with similarity above threshold
         for i, similarity in enumerate(similarities):
             if similarity >= threshold:
                 keyword = self.keyword_list[i]
@@ -247,7 +247,7 @@ class EnhancedEntityRecognizer:
         """综合提取实体"""
         entities = []
         
-        # 1. 专业库识别
+        # 1. Professional library recognition
         if self.use_professional_libs and self.enable_entity_recognition:
             jieba_entities = self.extract_entities_jieba(text)
             entities.extend(jieba_entities)
@@ -255,23 +255,23 @@ class EnhancedEntityRecognizer:
             hanlp_entities = self.extract_entities_hanlp(text)
             entities.extend(hanlp_entities)
         
-        # 2. 语义相似度匹配
+        # 2. Semantic similarity matching
         if use_semantic and self.enable_semantic_matching:
             semantic_entities = self.extract_entities_semantic(text, semantic_threshold)
             entities.extend(semantic_entities)
         
-        # 3. 去重和排序
+        # 3. Deduplication and sorting
         unique_entities = []
         seen_texts = set()
         
         for entity in entities:
             entity_text = entity.get("text")
-            # 确保entity_text是字符串类型
+            # Ensure entity_text is string type
             if isinstance(entity_text, str) and entity_text not in seen_texts:
                 unique_entities.append(entity)
                 seen_texts.add(entity_text)
         
-        # 按相似度排序（如果有的话）
+        # Sort by similarity (if available)
         unique_entities.sort(key=lambda x: x.get("similarity", 0), reverse=True)
         
         return unique_entities
@@ -290,7 +290,7 @@ class EnhancedEntityRecognizer:
         
         return dict(summary)
 
-# 测试函数
+    # Test function
 if __name__ == "__main__":
     recognizer = EnhancedEntityRecognizer(use_professional_libs=True)
     

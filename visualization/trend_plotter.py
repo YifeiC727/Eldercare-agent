@@ -3,10 +3,10 @@ import os
 from io import StringIO
 
 def get_emotion_trend(user_id: str = None):
-    """获取情绪趋势数据，支持用户隔离"""
+    """Get emotion trend data with user isolation support"""
     csv_file = "visualization/emotion_trend.csv"
     if not os.path.exists(csv_file):
-        #返回一个空的字典，避免绘图时出错
+        # Return empty dict to avoid plotting errors
         return {
             "dates": [],
             "sadness": [],
@@ -16,34 +16,34 @@ def get_emotion_trend(user_id: str = None):
         }
     
     try:
-        # 尝试读取CSV文件，处理混合格式
+        # Try to read CSV file, handle mixed formats
         with open(csv_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
         
-        # 分离不同格式的数据
+        # Separate different format data
         old_format_data = []
         new_format_data = []
         
-        for line in lines[1:]:  # 跳过标题行
+        for line in lines[1:]:  # Skip header row
             parts = line.strip().split(',')
-            if len(parts) == 5:  # 旧格式
+            if len(parts) == 5:  # Old format
                 old_format_data.append(line)
-            elif len(parts) == 6:  # 新格式
+            elif len(parts) == 6:  # New format
                 new_format_data.append(line)
         
-                # 处理旧格式数据
+        # Process old format data
         old_df = None
         if old_format_data:
             old_df = pd.read_csv(StringIO('timestamp,anger,sadness,joy,intensity\n' + ''.join(old_format_data)))
         
-        # 处理新格式数据
+        # Process new format data
         new_df = None
         if new_format_data:
             new_df = pd.read_csv(StringIO('user_id,timestamp,anger,sadness,joy,intensity\n' + ''.join(new_format_data)))
             if user_id:
                 new_df = new_df[new_df["user_id"] == user_id]
         
-        # 合并数据
+        # Merge data
         if old_df is not None and new_df is not None:
             df = pd.concat([old_df, new_df], ignore_index=True)
         elif old_df is not None:
@@ -59,12 +59,12 @@ def get_emotion_trend(user_id: str = None):
                 "intensity": []
             }
         
-        # 处理时间戳
+        # Process timestamps
         df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
         df = df.dropna(subset=["timestamp"])
-        df["date"] = df["timestamp"].dt.date  # 提取日期
+        df["date"] = df["timestamp"].dt.date  # Extract date
 
-        # 按日期分组计算平均值，确保数值列正确
+        # Group by date and calculate average, ensure numeric columns are correct
         numeric_columns = ["sadness", "joy", "anger", "intensity"]
         for col in numeric_columns:
             if col in df.columns:
@@ -83,7 +83,7 @@ def get_emotion_trend(user_id: str = None):
         return result
         
     except Exception as e:
-        print(f"读取情绪趋势数据时出错: {e}")
+        print(f"Error reading emotion trend data: {e}")
         return {
             "dates": [],
             "sadness": [],

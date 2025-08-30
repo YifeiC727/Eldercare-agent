@@ -18,3 +18,4 @@ pydub
 bson
 librosa
 # pyaudioop
+torch

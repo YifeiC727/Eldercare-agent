@@ -16,7 +16,7 @@ class RAGKeywordStrategy:
     def __init__(self, corpus_path: str = "elder_topic_corpus.json"):
         self.corpus_path = os.path.join(os.path.dirname(__file__), "elder_topic_corpus.json")
         
-        # 初始化embed_model，如果失败则设置为None
+        # Initialize embed_model, set to None if failed
         try:
             self.embed_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
             self.dimension = self.embed_model.get_sentence_embedding_dimension()
@@ -27,7 +27,7 @@ class RAGKeywordStrategy:
         except Exception as e:
             print(f"Warning: Failed to initialize SentenceTransformer in RAGKeywordStrategy: {e}")
             self.embed_model = None
-            self.dimension = 384  # 默认维度
+            self.dimension = 384  # Default dimension
             self.index = None
         
         self.texts = []
@@ -45,7 +45,7 @@ class RAGKeywordStrategy:
         self.texts = [entry["text"] for entry in entries]
         self.metadata = [entry for entry in entries]
         
-        # 只有在embed_model可用时才计算embeddings
+        # Only compute embeddings when embed_model is available
         if self.embed_model is not None and self.index is not None:
             try:
                 embeddings = self.embed_model.encode(self.texts, convert_to_numpy=True, normalize_embeddings=True)
@@ -55,7 +55,7 @@ class RAGKeywordStrategy:
 
     def retrieve_relevant_snippets(self, query: str, top_k: int = 3) -> List[Dict]:
         if self.embed_model is None or self.index is None:
-            # 如果embed_model不可用，返回空列表
+            # If embed_model is not available, return empty list
             return []
         
         try:
@@ -76,12 +76,12 @@ class RAGKeywordStrategy:
 
         prompts = []
         for kw in keywords:
-            # 首先尝试直接匹配keywords字段
+            # First try direct matching with keywords field
             relevant_by_keyword = self._find_by_keyword(kw)
             if relevant_by_keyword:
                 prompts.append(relevant_by_keyword["text"])
             else:
-                # 如果没有找到，使用语义检索
+                # If not found, use semantic retrieval
                 relevant = self.retrieve_relevant_snippets(kw, top_k=1)
                 if relevant:
                     prompts.append(relevant[0]["text"])
@@ -92,7 +92,7 @@ class RAGKeywordStrategy:
         return "这些内容可能对你有帮助：" + " / ".join(prompts[:3])
     
     def _find_by_keyword(self, keyword: str) -> Optional[Dict]:
-        """通过keywords字段直接匹配"""
+        """Direct matching through keywords field"""
         for metadata in self.metadata:
             if "keywords" in metadata:
                 keywords_list = metadata["keywords"]
@@ -101,7 +101,7 @@ class RAGKeywordStrategy:
         return None
 
     def refresh_corpus(self, new_entries: List[Dict]):
-        # 动态添加新语料内容（可选）
+        # Dynamically add new corpus content (optional)
         for entry in new_entries:
             self.texts.append(entry["text"])
             self.metadata.append(entry)
