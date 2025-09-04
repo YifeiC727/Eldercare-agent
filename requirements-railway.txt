@@ -1,24 +1,11 @@
-flask
-werkzeug
-requests
-python-dotenv
-jieba
-openai
-# pyaudio  # 在Railway环境中可能安装失败，已实现降级处理
-baidu-aip
-sentence-transformers
-tinydb
-faiss-cpu
-numpy<2.0
-chardet
-seaborn
-matplotlib
-pymongo
-pydub
-bson
-# librosa  # 依赖复杂，可能导致安装失败
-torch
-dnspython
-gunicorn
-flask-cors
-# hanlp  # 依赖复杂，可能导致安装失败
+# Railway部署专用 - 精简依赖
+flask==3.1.2
+werkzeug==3.1.3
+gunicorn==23.0.0
+requests==2.31.0
+jieba==0.42.1
+numpy==1.24.3
+pandas==2.0.3
+python-dotenv==1.0.0
+pymongo==4.6.0
+bson==0.5.10

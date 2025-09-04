@@ -15,107 +15,10 @@ def create_fallback_app():
     from flask import Flask, jsonify, request, render_template_string, session, redirect, url_for
     import json
     import hashlib
-    import requests
     from datetime import datetime
     
     app = Flask(__name__)
     app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-    
-    # 情感分析函数
-    def analyze_emotion_with_api(text):
-        """使用DeepSeek API进行情感分析"""
-        api_key = os.environ.get('CAMELLIA_KEY')
-        if not api_key:
-            return {"sadness": 0.2, "joy": 0.6, "anger": 0.1, "intensity": 0.5}
-        
-        try:
-            # 调用DeepSeek API
-            response = requests.post(
-                "https://api.deepseek.com/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "deepseek-chat",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "你是一个情感分析专家。请分析用户输入的情感，返回JSON格式：{\"sadness\": 0.2, \"joy\": 0.6, \"anger\": 0.1, \"intensity\": 0.5}"
-                        },
-                        {
-                            "role": "user", 
-                            "content": f"请分析这句话的情感：{text}"
-                        }
-                    ],
-                    "temperature": 0.3
-                }
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                content = result.get('choices', [{}])[0].get('message', {}).get('content', '{}')
-                try:
-                    emotion_data = json.loads(content)
-                    return emotion_data
-                except:
-                    return {"sadness": 0.2, "joy": 0.6, "anger": 0.1, "intensity": 0.5}
-            else:
-                return {"sadness": 0.2, "joy": 0.6, "anger": 0.1, "intensity": 0.5}
-                
-        except Exception as e:
-            print(f"情感分析失败: {e}")
-            return {"sadness": 0.2, "joy": 0.6, "anger": 0.1, "intensity": 0.5}
-
-    def generate_response_with_api(user_input, emotion_data):
-        """使用DeepSeek API生成回复"""
-        api_key = os.environ.get('CAMELLIA_KEY')
-        if not api_key:
-            return "抱歉，系统配置不完整，无法生成回复。"
-        
-        try:
-            # 构建提示词
-            sadness = emotion_data.get("sadness", 0.2)
-            joy = emotion_data.get("joy", 0.6)
-            anger = emotion_data.get("anger", 0.1)
-            intensity = emotion_data.get("intensity", 0.5)
-            
-            system_prompt = f"""你是一个专业的养老护理助手，具有丰富的情感支持经验。请根据用户的情感状态和输入内容，提供温暖、专业的回复。
-
-用户情感分析结果：
-- 悲伤程度: {sadness:.2f}
-- 快乐程度: {joy:.2f}  
-- 愤怒程度: {anger:.2f}
-- 情感强度: {intensity:.2f}
-
-请用温暖、关怀的语气回复，长度控制在50字以内。"""
-            
-            response = requests.post(
-                "https://api.deepseek.com/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "deepseek-chat",
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_input}
-                    ],
-                    "temperature": 0.7,
-                    "max_tokens": 100
-                }
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                return result.get('choices', [{}])[0].get('message', {}).get('content', '我理解您的感受，请告诉我更多。')
-            else:
-                return "我理解您的感受，请告诉我更多。"
-                
-        except Exception as e:
-            print(f"回复生成失败: {e}")
-            return "我理解您的感受，请告诉我更多。"
     
     # 简单的用户数据存储
     USERS_FILE = 'users.json'
@@ -860,222 +763,14 @@ def create_fallback_app():
         if not user:
             return redirect(url_for('login'))
         
-        # 返回个人资料HTML页面
-        PROFILE_TEMPLATE = """
-        <!DOCTYPE html>
-        <html lang="zh-CN">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>个人资料 - 养老护理助手</title>
-            <style>
-                body {
-                    font-family: 'Microsoft YaHei', Arial, sans-serif;
-                    background: #f5f7fa;
-                    margin: 0;
-                    padding: 20px;
-                }
-                
-                .container {
-                    max-width: 800px;
-                    margin: 0 auto;
-                    background: white;
-                    border-radius: 15px;
-                    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-                    overflow: hidden;
-                }
-                
-                .header {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    padding: 30px;
-                    text-align: center;
-                    position: relative;
-                }
-                
-                .header h1 {
-                    margin: 0;
-                    font-size: 28px;
-                    font-weight: 300;
-                }
-                
-                .back-btn {
-                    position: absolute;
-                    top: 20px;
-                    left: 20px;
-                    background: rgba(255,255,255,0.2);
-                    border: none;
-                    color: white;
-                    padding: 10px 15px;
-                    border-radius: 20px;
-                    cursor: pointer;
-                    text-decoration: none;
-                    font-size: 14px;
-                }
-                
-                .content {
-                    padding: 30px;
-                }
-                
-                .section {
-                    margin-bottom: 30px;
-                    border-bottom: 1px solid #eee;
-                    padding-bottom: 20px;
-                }
-                
-                .section:last-child {
-                    border-bottom: none;
-                }
-                
-                .section-title {
-                    font-size: 20px;
-                    color: #333;
-                    margin-bottom: 15px;
-                    font-weight: 500;
-                }
-                
-                .info-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                    gap: 15px;
-                }
-                
-                .info-item {
-                    background: #f8f9fa;
-                    padding: 20px;
-                    border-radius: 8px;
-                    border-left: 4px solid #007bff;
-                }
-                
-                .info-label {
-                    font-size: 14px;
-                    color: #666;
-                    margin-bottom: 5px;
-                }
-                
-                .info-value {
-                    font-size: 16px;
-                    color: #333;
-                    font-weight: 500;
-                }
-                
-                .empty-value {
-                    color: #999;
-                    font-style: italic;
-                }
-                
-                .edit-btn {
-                    background: #007bff;
-                    color: white;
-                    border: none;
-                    padding: 8px 16px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 12px;
-                    margin-top: 10px;
-                }
-                
-                .edit-btn:hover {
-                    background: #0056b3;
-                }
-                
-                .progress-container {
-                    margin-bottom: 30px;
-                }
-                
-                .progress-bar {
-                    width: 100%;
-                    height: 8px;
-                    background: #e9ecef;
-                    border-radius: 4px;
-                    overflow: hidden;
-                }
-                
-                .progress-fill {
-                    height: 100%;
-                    background: linear-gradient(90deg, #28a745, #20c997);
-                    transition: width 0.3s ease;
-                }
-                
-                .progress-text {
-                    text-align: center;
-                    margin-top: 10px;
-                    color: #666;
-                    font-size: 14px;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <a href="/" class="back-btn">← 返回首页</a>
-                    <h1>个人资料</h1>
-                </div>
-                
-                <div class="content">
-                    <div class="progress-container">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 75%"></div>
-                        </div>
-                        <div class="progress-text">信息完整度: 75%</div>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">基本信息</div>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">姓名</div>
-                                <div class="info-value">{{ user.name }}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">年龄</div>
-                                <div class="info-value">{{ user.age }} 岁</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">性别</div>
-                                <div class="info-value">{{ user.gender }}</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">账户信息</div>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">用户ID</div>
-                                <div class="info-value">{{ user.id }}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">注册时间</div>
-                                <div class="info-value">{{ user.created_at }}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">最后登录</div>
-                                <div class="info-value">{{ user.last_login or '从未登录' }}</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">系统状态</div>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">账户状态</div>
-                                <div class="info-value" style="color: #28a745;">正常</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">服务状态</div>
-                                <div class="info-value" style="color: #28a745;">运行中</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        return render_template_string(PROFILE_TEMPLATE, user=user)
+        return jsonify({
+            'user_id': user['id'],
+            'name': user['name'],
+            'age': user['age'],
+            'gender': user['gender'],
+            'created_at': user['created_at'],
+            'last_login': user.get('last_login', '从未登录')
+        })
     
     @app.route('/chat')
     def chat():
@@ -1271,7 +966,7 @@ def create_fallback_app():
     
     @app.route('/api/chat', methods=['POST'])
     def chat_api():
-        """智能对话API - 带情感分析"""
+        """智能对话API"""
         if 'user_id' not in session:
             return jsonify({'error': '请先登录'}), 401
         
@@ -1281,42 +976,29 @@ def create_fallback_app():
         if not user_input:
             return jsonify({'error': '请输入消息'}), 400
         
-        # 调用真正的情感分析API
-        emotion_data = None
-        try:
-            print(f"🧠 开始情感分析: {user_input}")
-            emotion_data = analyze_emotion_with_api(user_input)
-            print(f"🧠 情感分析结果: {emotion_data}")
-        except Exception as e:
-            print(f"⚠️ 情感分析失败: {e}")
-            emotion_data = {
-                "sadness": 0.2,
-                "joy": 0.6,
-                "anger": 0.1,
-                "intensity": 0.5
-            }
+        # 简单的智能回复逻辑
+        responses = {
+            "问候": ["您好！很高兴见到您。", "您好！我是您的养老护理助手。", "您好！有什么可以帮助您的吗？"],
+            "健康": ["健康很重要，建议您定期体检。", "保持良好的生活习惯对健康很有帮助。", "如果身体不适，请及时就医。"],
+            "情感": ["我理解您的感受。", "每个人都会有这样的情绪，这是正常的。", "您可以尝试做一些让自己开心的事情。"],
+            "生活": ["生活需要慢慢品味。", "保持积极的心态很重要。", "多和家人朋友交流会让生活更美好。"],
+            "默认": ["我明白了。", "这很有趣。", "请告诉我更多。", "我在这里倾听您。"]
+        }
         
-        # 使用AI生成智能回复
-        try:
-            print(f"🤖 开始生成回复...")
-            response = generate_response_with_api(user_input, emotion_data)
-            print(f"🤖 生成的回复: {response}")
-        except Exception as e:
-            print(f"⚠️ 回复生成失败: {e}")
-            # 降级到简单回复
-            sadness_score = emotion_data.get("sadness", 0.2)
-            joy_score = emotion_data.get("joy", 0.6)
-            
-            if sadness_score > 0.6:
-                response = "我注意到您可能有些难过，我在这里陪伴您。有什么想和我分享的吗？"
-            elif joy_score > 0.7:
-                response = "很高兴看到您心情不错！继续保持这种积极的状态。"
-            else:
-                response = "我理解您的感受，请告诉我更多。"
+        # 简单的关键词匹配
+        if any(word in user_input for word in ['你好', '您好', 'hi', 'hello']):
+            response = responses["问候"][0]
+        elif any(word in user_input for word in ['健康', '身体', '病', '药']):
+            response = responses["健康"][0]
+        elif any(word in user_input for word in ['心情', '感觉', '情绪', '开心', '难过']):
+            response = responses["情感"][0]
+        elif any(word in user_input for word in ['生活', '日常', '习惯']):
+            response = responses["生活"][0]
+        else:
+            response = responses["默认"][0]
         
         return jsonify({
             'response': response,
-            'emotion': emotion_data,
             'timestamp': datetime.now().isoformat()
         })
     

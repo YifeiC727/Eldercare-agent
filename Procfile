@@ -1,1 +1,1 @@
-web: python app_compatible.py
+web: python railway_start.py
