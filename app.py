@@ -49,6 +49,9 @@ app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 app.json_encoder = CustomJSONEncoder
 
+# 确保JSON响应正确处理中文字符
+app.config['JSON_AS_ASCII'] = False
+
 generator = LLMGenerator()
 selector = StrategySelector()
 
