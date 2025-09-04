@@ -1,1 +1,1 @@
-web: python start_existing_ui.py
+web: python start_progressive.py
