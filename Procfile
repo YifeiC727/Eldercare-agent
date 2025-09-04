@@ -1,1 +1,1 @@
-web: python app_enhanced.py
+web: python app_compatible.py
