@@ -1,1 +1,1 @@
-web: python start_core.py
+web: python start_existing_ui.py
