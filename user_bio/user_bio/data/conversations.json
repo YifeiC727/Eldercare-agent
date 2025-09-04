@@ -1,0 +1,38 @@
+[
+  {
+    "user_input": "你好",
+    "ai_response": "您好！很高兴见到您。",
+    "emotion_scores": {
+      "joy": 0.8,
+      "sadness": 0.1
+    },
+    "conversation_id": "test_conv_001",
+    "user_id": "1ef638a6-7879-40d6-9e04-c4df680f9784",
+    "created_at": "2025-09-03 23:12:54.527593",
+    "_id": "b3b3cf88-d776-4eec-a37b-085d3b0e0565"
+  },
+  {
+    "user_input": "你好",
+    "ai_response": "您好！很高兴见到您。",
+    "emotion_scores": {
+      "joy": 0.8,
+      "sadness": 0.1
+    },
+    "conversation_id": "test_conv_001",
+    "user_id": "05621ed5-e444-4a1d-911f-328e9bc92df3",
+    "created_at": "2025-09-03 23:13:27.957341",
+    "_id": "c7f3badb-d9a6-4977-acb0-e1c77ffa8f50"
+  },
+  {
+    "user_input": "你好",
+    "ai_response": "您好！很高兴见到您。",
+    "emotion_scores": {
+      "joy": 0.8,
+      "sadness": 0.1
+    },
+    "conversation_id": "test_conv_001",
+    "user_id": "6cb996b7-9228-4360-b586-989d36cfc79c",
+    "created_at": "2025-09-03 23:27:36.063997",
+    "_id": "f2a43ea3-1bab-4d92-aa39-7800f548bb94"
+  }
+]

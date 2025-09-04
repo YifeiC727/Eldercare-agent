@@ -1,0 +1,65 @@
+[
+  {
+    "basic_info": {
+      "name": "测试用户",
+      "age": "65",
+      "gender": "男"
+    },
+    "family_relation": {},
+    "living_habits": {},
+    "health_status": {},
+    "login_info": {
+      "username": "测试用户",
+      "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae"
+    },
+    "ip_address": "127.0.0.1",
+    "created_at": "2025-09-03 23:12:54.527187",
+    "updated_at": "2025-09-03 23:12:54.527206",
+    "question_status": {},
+    "conversation_count": 0,
+    "last_login": "2025-09-03 23:27:36.063757",
+    "_id": "1ef638a6-7879-40d6-9e04-c4df680f9784"
+  },
+  {
+    "basic_info": {
+      "name": "测试用户",
+      "age": "65",
+      "gender": "男"
+    },
+    "family_relation": {},
+    "living_habits": {},
+    "health_status": {},
+    "login_info": {
+      "username": "测试用户",
+      "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae"
+    },
+    "ip_address": "127.0.0.1",
+    "created_at": "2025-09-03 23:13:27.956719",
+    "updated_at": "2025-09-03 23:13:27.956738",
+    "question_status": {},
+    "conversation_count": 0,
+    "last_login": "2025-09-03 23:13:27.956739",
+    "_id": "05621ed5-e444-4a1d-911f-328e9bc92df3"
+  },
+  {
+    "basic_info": {
+      "name": "测试用户",
+      "age": "65",
+      "gender": "男"
+    },
+    "family_relation": {},
+    "living_habits": {},
+    "health_status": {},
+    "login_info": {
+      "username": "测试用户",
+      "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae"
+    },
+    "ip_address": "127.0.0.1",
+    "created_at": "2025-09-03 23:27:36.061735",
+    "updated_at": "2025-09-03 23:27:36.061993",
+    "question_status": {},
+    "conversation_count": 0,
+    "last_login": "2025-09-03 23:27:36.061994",
+    "_id": "6cb996b7-9228-4360-b586-989d36cfc79c"
+  }
+]

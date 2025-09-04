@@ -427,5 +427,29 @@
       "intensity": 0.20214727035553637
     },
     "timestamp": "2025-08-07T15:12:24.877145"
+  },
+  {
+    "user_input": "你好，我是测试用户",
+    "ai_response": "您好！很高兴见到您。",
+    "emotion_scores": {
+      "joy": 0.8,
+      "sadness": 0.1
+    },
+    "conversation_id": "test_conv_001",
+    "user_id": "803b6667-2207-43f7-b507-fdad30b750c6",
+    "created_at": "2025-09-03 23:30:32.633204",
+    "_id": "25082662-8ddd-4acc-8ca3-1207a2c19596"
+  },
+  {
+    "user_input": "你好，我是测试用户",
+    "ai_response": "您好！很高兴见到您。",
+    "emotion_scores": {
+      "joy": 0.8,
+      "sadness": 0.1
+    },
+    "conversation_id": "test_conv_001",
+    "user_id": "e05a456d-7ab4-490b-86f8-2ea387601332",
+    "created_at": "2025-09-03 23:42:01.845290",
+    "_id": "8d34ff63-2848-47dc-823b-c65307196833"
   }
 ]

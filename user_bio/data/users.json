@@ -43,5 +43,146 @@
     "conversation_count": 2,
     "last_login": "2025-08-06T02:19:01.512518",
     "_id": "6891b66147d31f2e16f2592c"
+  },
+  {
+    "name": "测试用户",
+    "created_at": "2025-09-03 23:11:22.125156",
+    "test": true,
+    "_id": "a7f16135-251d-4d8c-8814-370a80a41ba8"
+  },
+  {
+    "name": "系统测试",
+    "timestamp": "2025-09-03 23:17:18.524223",
+    "test_type": "integration",
+    "_id": "ea95c66a-f7da-454c-a846-864f6d741498"
+  },
+  {
+    "basic_info": {
+      "name": "测试用户",
+      "age": "65",
+      "gender": "男"
+    },
+    "family_relation": {},
+    "living_habits": {},
+    "health_status": {},
+    "login_info": {
+      "username": "测试用户",
+      "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae"
+    },
+    "ip_address": "127.0.0.1",
+    "created_at": "2025-09-03 23:17:33.709717",
+    "updated_at": "2025-09-03 23:17:33.709753",
+    "question_status": {},
+    "conversation_count": 0,
+    "last_login": "2025-09-03 23:42:01.843948",
+    "_id": "04f5cf61-162c-4e93-a213-9bd19ffbaec9"
+  },
+  {
+    "name": "系统测试",
+    "timestamp": "2025-09-03 23:21:48.184922",
+    "test_type": "integration",
+    "_id": "3b864848-c4ef-452c-aaf4-742dd3b06e66"
+  },
+  {
+    "basic_info": {
+      "name": "测试用户",
+      "age": "65",
+      "gender": "男"
+    },
+    "family_relation": {},
+    "living_habits": {},
+    "health_status": {},
+    "login_info": {
+      "username": "测试用户",
+      "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae"
+    },
+    "ip_address": "127.0.0.1",
+    "created_at": "2025-09-03 23:22:03.485335",
+    "updated_at": "2025-09-03 23:22:03.486545",
+    "question_status": {},
+    "conversation_count": 0,
+    "last_login": "2025-09-03 23:22:03.486547",
+    "_id": "2773fa56-d101-4af1-8f0e-0f4cbce43ce8"
+  },
+  {
+    "name": "系统测试",
+    "timestamp": "2025-09-03 23:23:56.914315",
+    "test_type": "integration",
+    "_id": "a226cf20-5c0f-4e35-948d-168ff40f1e81"
+  },
+  {
+    "basic_info": {
+      "name": "测试用户",
+      "age": "65",
+      "gender": "男"
+    },
+    "family_relation": {},
+    "living_habits": {},
+    "health_status": {},
+    "login_info": {
+      "username": "测试用户",
+      "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae"
+    },
+    "ip_address": "127.0.0.1",
+    "created_at": "2025-09-03 23:24:12.711601",
+    "updated_at": "2025-09-03 23:24:12.713496",
+    "question_status": {},
+    "conversation_count": 0,
+    "last_login": "2025-09-03 23:24:12.713498",
+    "_id": "3808729e-45e7-4e31-bdf6-7e7365470ad9"
+  },
+  {
+    "name": "系统测试",
+    "timestamp": "2025-09-03 23:30:17.361307",
+    "test_type": "integration",
+    "_id": "19a6af33-1f2d-4f14-a54f-6c979ac2722e"
+  },
+  {
+    "basic_info": {
+      "name": "测试用户",
+      "age": "65",
+      "gender": "男"
+    },
+    "family_relation": {},
+    "living_habits": {},
+    "health_status": {},
+    "login_info": {
+      "username": "测试用户",
+      "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae"
+    },
+    "ip_address": "127.0.0.1",
+    "created_at": "2025-09-03 23:30:32.625298",
+    "updated_at": "2025-09-03 23:30:32.625583",
+    "question_status": {},
+    "conversation_count": 0,
+    "last_login": "2025-09-03 23:30:32.625584",
+    "_id": "803b6667-2207-43f7-b507-fdad30b750c6"
+  },
+  {
+    "name": "系统测试",
+    "timestamp": "2025-09-03 23:41:46.621404",
+    "test_type": "integration",
+    "_id": "9af2bb77-8880-41b4-892f-9e4ba543ec96"
+  },
+  {
+    "basic_info": {
+      "name": "测试用户",
+      "age": "65",
+      "gender": "男"
+    },
+    "family_relation": {},
+    "living_habits": {},
+    "health_status": {},
+    "login_info": {
+      "username": "测试用户",
+      "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae"
+    },
+    "ip_address": "127.0.0.1",
+    "created_at": "2025-09-03 23:42:01.839153",
+    "updated_at": "2025-09-03 23:42:01.839373",
+    "question_status": {},
+    "conversation_count": 0,
+    "last_login": "2025-09-03 23:42:01.839374",
+    "_id": "e05a456d-7ab4-490b-86f8-2ea387601332"
   }
 ]

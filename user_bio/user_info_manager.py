@@ -20,16 +20,35 @@ class UserInfoManager:
         # Try to connect to MongoDB
         if MONGODB_AVAILABLE:
             try:
-                mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
-                self.client = MongoClient(mongodb_uri, serverSelectionTimeoutMS=3000)
-                # Test connection
-                self.client.admin.command('ping')
-                self.db = self.client["eldercare"]
-                self.users_collection = self.db["users"]
-                self.questions_collection = self.db["questions"]
-                self.conversations_collection = self.db["conversations"]
-                print("✅ MongoDB connection successful, using database storage")
-                self.use_file_storage = False
+                # 尝试多种连接方式
+                mongodb_uris = [
+                    os.getenv("MONGODB_URI", "mongodb://localhost:27017/"),
+                    "mongodb://eldercare_user:eldercare_pass@localhost:27017/eldercare",
+                    "mongodb://admin:eldercare123@localhost:27017/eldercare"
+                ]
+                
+                connected = False
+                for uri in mongodb_uris:
+                    try:
+                        print(f"🔄 尝试连接MongoDB: {uri.split('@')[0]}@...")
+                        self.client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+                        # Test connection
+                        self.client.admin.command('ping')
+                        self.db = self.client["eldercare"]
+                        self.users_collection = self.db["users"]
+                        self.questions_collection = self.db["questions"]
+                        self.conversations_collection = self.db["conversations"]
+                        print("✅ MongoDB connection successful, using database storage")
+                        self.use_file_storage = False
+                        connected = True
+                        break
+                    except Exception as e:
+                        print(f"❌ 连接失败: {e}")
+                        continue
+                
+                if not connected:
+                    raise Exception("所有MongoDB连接尝试都失败了")
+                    
             except Exception as e:
                 print(f"⚠️ MongoDB connection failed: {e}")
                 print("🔄 Switching to file storage mode")
