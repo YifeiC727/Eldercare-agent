@@ -1,1 +1,1 @@
-web: python start_complete.py
+web: python start_simple_complete.py
