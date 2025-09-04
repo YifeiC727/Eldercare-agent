@@ -1025,12 +1025,12 @@ if __name__ == '__main__':
     try:
         print("🚀 尝试启动完整系统...")
         
-        # 尝试导入完整的Flask应用
+        # 尝试导入兼容版Flask应用
         try:
-            from app import app
-            print("✅ 完整Flask应用导入成功")
+            from app_compatible import app
+            print("✅ 兼容版Flask应用导入成功")
         except Exception as e:
-            print(f"⚠️ 完整系统导入失败: {e}")
+            print(f"⚠️ 兼容版系统导入失败: {e}")
             print("🔄 启动简化版完整系统...")
             app = create_fallback_app()
         
