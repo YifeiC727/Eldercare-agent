@@ -1,16 +1,35 @@
 from flask import Flask, render_template, request, jsonify, url_for, session, redirect
 from strategy.llm_generator import LLMGenerator
 from strategy.strategy_selector import StrategySelector
-from user_bio.user_info_manager import UserInfoManager
+from user_bio.improved_user_info_manager import ImprovedUserInfoManager
 from bson import ObjectId
 import secrets
 import os
 import time
 import csv
+import json
 import numpy as np
+from datetime import datetime
 from werkzeug.utils import secure_filename
-from speech.baidu_speech_recognizer import BaiduSpeechRecognizer
 from emotion_detection.emotion_recognizer import EmotionRecognizer
+
+# 加载环境变量
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("✅ 环境变量已加载")
+except ImportError:
+    print("⚠️ python-dotenv未安装，跳过环境变量加载")
+
+# 尝试导入音频相关模块
+try:
+    from speech.baidu_speech_recognizer import BaiduSpeechRecognizer
+    SPEECH_RECOGNIZER_AVAILABLE = True
+    print("✅ 语音识别模块导入成功")
+except Exception as e:
+    SPEECH_RECOGNIZER_AVAILABLE = False
+    print(f"⚠️ 语音识别模块导入失败: {e}")
+    BaiduSpeechRecognizer = None
 
 try:
     from pydub import AudioSegment
@@ -19,14 +38,34 @@ except ImportError:
     PYDUB_AVAILABLE = False
     print("Warning: pydub not available, audio processing will be limited")
 
+# 自定义JSON编码器处理ObjectId
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        return super().default(obj)
+
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
+app.json_encoder = CustomJSONEncoder
 
 generator = LLMGenerator()
 selector = StrategySelector()
-speech_recognizer = BaiduSpeechRecognizer()
+
+# 初始化语音识别器
+if SPEECH_RECOGNIZER_AVAILABLE:
+    try:
+        speech_recognizer = BaiduSpeechRecognizer()
+        print("✅ 语音识别器初始化成功")
+    except Exception as e:
+        print(f"⚠️ 语音识别器初始化失败: {e}")
+        speech_recognizer = None
+else:
+    speech_recognizer = None
+    print("⚠️ 语音识别器不可用")
+
 emotion_recognizer = EmotionRecognizer()
-user_info_manager = UserInfoManager()
+user_info_manager = ImprovedUserInfoManager()
 
 # Lazily initialized tone_emotion analyzer
 tone_analyzer = None
@@ -164,6 +203,48 @@ def index():
     else:
         return render_template("login.html")
 
+@app.route('/health')
+def health_check():
+    """健康检查端点"""
+    try:
+        # 检查数据库连接
+        db_status = "healthy"
+        try:
+            # 尝试连接数据库
+            if hasattr(user_info_manager, 'data_manager'):
+                stats = user_info_manager.data_manager.get_stats()
+                db_status = "healthy" if stats else "unhealthy"
+        except Exception as e:
+            db_status = f"unhealthy: {str(e)}"
+        
+        # 检查核心组件
+        components = {
+            "database": db_status,
+            "emotion_recognizer": "healthy" if emotion_recognizer else "unhealthy",
+            "strategy_selector": "healthy" if selector else "unhealthy",
+            "llm_generator": "healthy" if generator else "unhealthy",
+            "speech_recognizer": "healthy" if speech_recognizer else "unavailable"
+        }
+        
+        # 总体状态
+        overall_status = "healthy" if all(
+            status in ["healthy", "unavailable"] for status in components.values()
+        ) else "unhealthy"
+        
+        return jsonify({
+            "status": overall_status,
+            "timestamp": datetime.now().isoformat(),
+            "components": components,
+            "version": "1.0.0"
+        }), 200 if overall_status == "healthy" else 503
+        
+    except Exception as e:
+        return jsonify({
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 503
+
 @app.route("/register")
 def register():
     return render_template("minimal_registration.html")
@@ -186,7 +267,8 @@ def create_user():
     
     # Create user
     user_id = user_info_manager.create_user(data, user_ip)
-    session["user_id"] = user_id
+    # 确保user_id是字符串类型，避免ObjectId序列化问题
+    session["user_id"] = str(user_id)
     session["history"] = []
     
     # Initialize user emotion history
@@ -212,7 +294,8 @@ def login():
     
     if user:
         user_id = user["_id"]
-        session["user_id"] = user_id
+        # 确保user_id是字符串类型，避免ObjectId序列化问题
+        session["user_id"] = str(user_id)
         session["history"] = []
         
         # Initialize user emotion history (if not exists)
@@ -394,7 +477,10 @@ def chat():
                 }
         
         # Generate reply
+        print(f"🔧 开始生成回复...")
+        print(f"🔧 策略信息: {strategy}")
         reply = generator.generate_response(user_input, strategy)
+        print(f"🔧 生成的回复: {reply}")
         
         # Check if need to ask user information
         next_question = strategy.get("next_question")
@@ -435,6 +521,9 @@ def chat():
 
         return jsonify(response_data)
     except Exception as e:
+        import traceback
+        print(f"❌ 聊天处理异常: {str(e)}")
+        print(f"❌ 异常详情: {traceback.format_exc()}")
         return jsonify({"error": f"处理消息失败: {str(e)}"}), 500
 
 @app.route("/chat_audio", methods=["POST"])
@@ -472,6 +561,13 @@ def chat_audio():
             print(f'音频转码失败: {e}')
         
         # Speech recognition
+        if speech_recognizer is None:
+            return jsonify({
+                'error': '语音识别功能不可用，请使用文本输入',
+                'text': '',
+                'reply': '抱歉，语音识别功能暂时不可用，请您使用文字输入。'
+            }), 200
+        
         try:
             text = speech_recognizer.recognize_file(temp_path)
         except Exception as e:
@@ -808,4 +904,6 @@ def gds_result():
     return render_template("gds_result.html", score=score, description=description)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    # 根据环境变量决定是否启用调试模式
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode, port=5001, host='0.0.0.0')

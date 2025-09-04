@@ -176,7 +176,16 @@ class EmotionRecognizer:
 
         except Exception as e:
             print("❌ 情绪识别调用出错：", e)
-            print("📄 原始返回内容:", response.text if 'response' in locals() else "No response object")
+            if 'response' in locals():
+                print("📄 原始返回内容:", response.text)
+            else:
+                print("📄 无响应对象")
+            
+            # 如果没有API密钥，返回默认值
+            if not self.api_key or self.api_key == "your-deepseek-api-key-here":
+                print("⚠️ 未设置有效的DeepSeek API密钥，使用默认情感值")
+                return {"anger": 0.0, "sadness": 0.0, "joy": 0.0, "intensity": 0.0}
+            
             return {"anger": 0.0, "sadness": 0.0, "joy": 0.0, "intensity": 0.0}
 
     def print_window_scores(self, results):

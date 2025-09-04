@@ -9,7 +9,16 @@ import logging
 import threading
 import queue
 import json
-import pyaudio
+
+# 使用兼容性音频管理器
+try:
+    from .audio_compatibility import get_audio_manager, AudioCompatibilityManager
+    AUDIO_COMPATIBILITY_AVAILABLE = True
+except Exception as e:
+    print(f"⚠️ 音频兼容性模块导入失败: {e}")
+    AUDIO_COMPATIBILITY_AVAILABLE = False
+    get_audio_manager = None
+    AudioCompatibilityManager = None
 from aip import AipSpeech
 
 class BaiduSpeechRecognizer:
@@ -35,7 +44,20 @@ class BaiduSpeechRecognizer:
         self.client = AipSpeech(self.APP_ID, self.API_KEY, self.SECRET_KEY)
         
         # Audio parameters
-        self.FORMAT = pyaudio.paInt16
+        self.PYAUDIO_AVAILABLE = False
+        try:
+            import pyaudio
+            # 测试PyAudio是否能正常工作
+            test_audio = pyaudio.PyAudio()
+            test_audio.terminate()
+            self.FORMAT = pyaudio.paInt16
+            self.PYAUDIO_AVAILABLE = True
+            self.logger.info("✅ PyAudio可用")
+        except Exception as e:
+            self.logger.warning(f"⚠️ PyAudio不可用: {e}")
+            self.FORMAT = 8  # paInt16 = 8
+            self.PYAUDIO_AVAILABLE = False
+        
         self.CHANNELS = 1
         self.RATE = 16000
         self.CHUNK = 1024
@@ -109,7 +131,10 @@ class BaiduSpeechRecognizer:
 
     def _show_security_warning(self):
         """Display security warning"""
-        warning = """
+        # 只在开发模式下显示详细警告
+        import os
+        if os.getenv('DEVELOPMENT_MODE', 'false').lower() == 'true':
+            warning = """
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         SECURITY WARNING: Protect your API keys!
         1. Never commit keys to version control
@@ -117,8 +142,11 @@ class BaiduSpeechRecognizer:
         3. Rotate your keys regularly
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         """
-        self.logger.warning(warning)
-        time.sleep(1)  # Ensure user sees the warning
+            self.logger.warning(warning)
+            time.sleep(1)  # Ensure user sees the warning
+        else:
+            # 生产模式下只显示简洁提示
+            self.logger.info("🔐 API密钥已加载，请确保密钥安全")
 
     def recognize_file(self, file_path: str, add_punctuation: bool = True, 
                        dev_pid: int = 1537) -> Optional[str]:
@@ -194,6 +222,10 @@ class BaiduSpeechRecognizer:
         :param dev_pid: Recognition model ID, default is Mandarin Chinese
         :return: (Recognition result, temporary file path)
         """
+        if not self.PYAUDIO_AVAILABLE:
+            self.logger.warning("PyAudio不可用，无法录制音频")
+            return None, None
+            
         if duration <= 0 or duration > self.MAX_DURATION:
             self.logger.error(f"Duration should be between 1-{self.MAX_DURATION} seconds")
             return None, None
@@ -223,6 +255,10 @@ class BaiduSpeechRecognizer:
         :param callback: Recognition result callback function
         :param silence_detection: Whether to enable silence detection
         """
+        if not self.PYAUDIO_AVAILABLE:
+            self.logger.warning("PyAudio不可用，无法启动连续录制")
+            return
+            
         if self._is_recording:
             self.logger.warning("Already recording")
             return
@@ -249,6 +285,11 @@ class BaiduSpeechRecognizer:
 
     def _continuous_recording_loop(self, silence_detection: bool):
         """Continuous recording loop"""
+        if not self.PYAUDIO_AVAILABLE:
+            self.logger.warning("PyAudio不可用，无法进行连续录制")
+            return
+            
+        import pyaudio
         audio = pyaudio.PyAudio()
         
         try:
@@ -372,7 +413,12 @@ class BaiduSpeechRecognizer:
 
     def _record_audio(self, file_path: str, duration: int) -> bool:
         """Record audio to file"""
+        if not self.PYAUDIO_AVAILABLE:
+            self.logger.warning("PyAudio不可用，无法录制音频")
+            return False
+            
         try:
+            import pyaudio
             audio = pyaudio.PyAudio()
             
             stream = audio.open(

@@ -13,9 +13,13 @@ numpy
 chardet
 seaborn
 matplotlib
-# pymongo
+pymongo
 pydub
 bson
 librosa
 # pyaudioop
 torch
+dnspython
+gunicorn
+flask-cors
+hanlp
