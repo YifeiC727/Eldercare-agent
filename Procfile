@@ -1,1 +1,1 @@
-web: python start_progressive.py
+web: python start_complete.py
