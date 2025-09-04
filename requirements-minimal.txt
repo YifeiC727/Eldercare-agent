@@ -13,15 +13,3 @@ pymongo==4.14.1
 gunicorn==23.0.0
 flask-cors==6.0.1
 dnspython==2.7.0
-
-# 可选依赖 - 可能导致构建超时
-# faiss-cpu
-# chardet
-# seaborn
-# matplotlib
-# pydub
-# bson
-# librosa
-# torch
-# hanlp
-# pyaudio
