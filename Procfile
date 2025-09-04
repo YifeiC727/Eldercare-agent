@@ -1,1 +1,1 @@
-web: python start_smart.py
+web: python start_core.py
