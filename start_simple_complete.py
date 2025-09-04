@@ -751,6 +751,257 @@ def create_fallback_app():
             "user_count": len(users)
         }), 200
     
+    @app.route('/profile')
+    def profile():
+        """个人资料页面"""
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        
+        users = load_users()
+        user = users.get(session['user_id'])
+        
+        if not user:
+            return redirect(url_for('login'))
+        
+        return jsonify({
+            'user_id': user['id'],
+            'name': user['name'],
+            'age': user['age'],
+            'gender': user['gender'],
+            'created_at': user['created_at'],
+            'last_login': user.get('last_login', '从未登录')
+        })
+    
+    @app.route('/chat')
+    def chat():
+        """智能对话页面"""
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        
+        users = load_users()
+        user = users.get(session['user_id'])
+        
+        if not user:
+            return redirect(url_for('login'))
+        
+        # 简单的聊天页面模板
+        CHAT_TEMPLATE = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>智能对话 - 养老护理助手</title>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+                body { 
+                    font-family: 'Microsoft YaHei', Arial, sans-serif; 
+                    margin: 0; 
+                    padding: 20px; 
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                }
+                .container { 
+                    max-width: 800px; 
+                    margin: 0 auto; 
+                    background: white;
+                    border-radius: 15px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                    overflow: hidden;
+                }
+                .header {
+                    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                    color: white;
+                    padding: 20px;
+                    text-align: center;
+                }
+                .chat-container {
+                    padding: 20px;
+                    height: 500px;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .chat-messages {
+                    flex: 1;
+                    overflow-y: auto;
+                    border: 1px solid #dee2e6;
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                    margin-bottom: 15px;
+                }
+                .message {
+                    margin: 10px 0;
+                    padding: 10px;
+                    border-radius: 8px;
+                    max-width: 80%;
+                }
+                .user-message {
+                    background: #007bff;
+                    color: white;
+                    margin-left: auto;
+                    text-align: right;
+                }
+                .bot-message {
+                    background: #e9ecef;
+                    color: #495057;
+                    margin-right: auto;
+                }
+                .chat-input {
+                    display: flex;
+                    gap: 10px;
+                }
+                .chat-input input {
+                    flex: 1;
+                    padding: 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 6px;
+                    font-size: 16px;
+                }
+                .btn {
+                    padding: 12px 24px;
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 16px;
+                }
+                .btn:hover {
+                    background: #0056b3;
+                }
+                .back-btn {
+                    background: #6c757d;
+                    color: white;
+                    text-decoration: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    display: inline-block;
+                    margin: 10px;
+                }
+                .back-btn:hover {
+                    background: #545b62;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>💬 智能对话</h1>
+                    <p>与您的养老护理助手进行对话</p>
+                </div>
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot-message">
+                            <strong>助手:</strong> 您好！我是您的养老护理助手，有什么可以帮助您的吗？
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="请输入您的问题..." onkeypress="handleKeyPress(event)">
+                        <button class="btn" onclick="sendMessage()">发送</button>
+                    </div>
+                </div>
+                <a href="/" class="back-btn">返回首页</a>
+            </div>
+            
+            <script>
+                function sendMessage() {
+                    const input = document.getElementById('chatInput');
+                    const message = input.value.trim();
+                    if (!message) return;
+                    
+                    const chatMessages = document.getElementById('chatMessages');
+                    
+                    // 添加用户消息
+                    const userMessage = document.createElement('div');
+                    userMessage.className = 'message user-message';
+                    userMessage.innerHTML = '<strong>您:</strong> ' + message;
+                    chatMessages.appendChild(userMessage);
+                    
+                    // 清空输入框
+                    input.value = '';
+                    
+                    // 滚动到底部
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // 发送到服务器
+                    fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({message: message})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // 添加机器人回复
+                        const botMessage = document.createElement('div');
+                        botMessage.className = 'message bot-message';
+                        botMessage.innerHTML = '<strong>助手:</strong> ' + data.response;
+                        chatMessages.appendChild(botMessage);
+                        
+                        // 滚动到底部
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'message bot-message';
+                        errorMessage.innerHTML = '<strong>助手:</strong> 抱歉，我遇到了一些问题，请稍后再试。';
+                        chatMessages.appendChild(errorMessage);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    });
+                }
+                
+                function handleKeyPress(event) {
+                    if (event.key === 'Enter') {
+                        sendMessage();
+                    }
+                }
+            </script>
+        </body>
+        </html>
+        """
+        
+        return render_template_string(CHAT_TEMPLATE)
+    
+    @app.route('/api/chat', methods=['POST'])
+    def chat_api():
+        """智能对话API"""
+        if 'user_id' not in session:
+            return jsonify({'error': '请先登录'}), 401
+        
+        data = request.json
+        user_input = data.get('message', '')
+        
+        if not user_input:
+            return jsonify({'error': '请输入消息'}), 400
+        
+        # 简单的智能回复逻辑
+        responses = {
+            "问候": ["您好！很高兴见到您。", "您好！我是您的养老护理助手。", "您好！有什么可以帮助您的吗？"],
+            "健康": ["健康很重要，建议您定期体检。", "保持良好的生活习惯对健康很有帮助。", "如果身体不适，请及时就医。"],
+            "情感": ["我理解您的感受。", "每个人都会有这样的情绪，这是正常的。", "您可以尝试做一些让自己开心的事情。"],
+            "生活": ["生活需要慢慢品味。", "保持积极的心态很重要。", "多和家人朋友交流会让生活更美好。"],
+            "默认": ["我明白了。", "这很有趣。", "请告诉我更多。", "我在这里倾听您。"]
+        }
+        
+        # 简单的关键词匹配
+        if any(word in user_input for word in ['你好', '您好', 'hi', 'hello']):
+            response = responses["问候"][0]
+        elif any(word in user_input for word in ['健康', '身体', '病', '药']):
+            response = responses["健康"][0]
+        elif any(word in user_input for word in ['心情', '感觉', '情绪', '开心', '难过']):
+            response = responses["情感"][0]
+        elif any(word in user_input for word in ['生活', '日常', '习惯']):
+            response = responses["生活"][0]
+        else:
+            response = responses["默认"][0]
+        
+        return jsonify({
+            'response': response,
+            'timestamp': datetime.now().isoformat()
+        })
+    
     @app.route('/status')
     def status():
         """系统状态"""
