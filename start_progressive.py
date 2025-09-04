@@ -514,6 +514,197 @@ def create_progressive_app():
     </html>
     """
     
+    # 登录页面模板
+    LOGIN_TEMPLATE = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login - ElderCare Companion</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                margin: 0;
+                padding: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .container {
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                padding: 40px;
+                width: 90%;
+                max-width: 400px;
+                text-align: center;
+            }
+            
+            h1 {
+                color: #333;
+                margin-bottom: 30px;
+                font-size: 28px;
+                font-weight: 300;
+            }
+            
+            .form-group {
+                margin-bottom: 25px;
+                text-align: left;
+            }
+            
+            label {
+                display: block;
+                margin-bottom: 8px;
+                color: #555;
+                font-weight: 500;
+            }
+            
+            input[type="text"], input[type="password"] {
+                width: 100%;
+                padding: 12px 15px;
+                border: 2px solid #e1e5e9;
+                border-radius: 10px;
+                font-size: 16px;
+                transition: border-color 0.3s;
+                box-sizing: border-box;
+            }
+            
+            input[type="text"]:focus, input[type="password"]:focus {
+                outline: none;
+                border-color: #667eea;
+            }
+            
+            button {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 15px 40px;
+                border-radius: 25px;
+                font-size: 18px;
+                cursor: pointer;
+                transition: transform 0.2s;
+                width: 100%;
+                margin-top: 20px;
+            }
+            
+            button:hover {
+                transform: translateY(-2px);
+            }
+            
+            .welcome-text {
+                color: #666;
+                margin-bottom: 30px;
+                line-height: 1.6;
+            }
+            
+            .error {
+                color: #e74c3c;
+                font-size: 14px;
+                margin-top: 5px;
+                display: none;
+            }
+            
+            .link {
+                color: #667eea;
+                text-decoration: none;
+                margin-top: 20px;
+                display: inline-block;
+            }
+            
+            .link:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>ElderCare Companion</h1>
+            <p class="welcome-text">
+                Welcome back! Please sign in to continue.
+            </p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username *</label>
+                    <input type="text" id="username" name="username" required placeholder="Enter your username">
+                    <div class="error" id="usernameError">Please enter your username</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                    <div class="error" id="passwordError">Please enter your password</div>
+                </div>
+                
+                <button type="submit">Sign In</button>
+            </form>
+            
+            <a href="/register" class="link">Don't have an account? Register here</a>
+            <br>
+            <a href="/" class="link">Back to Home</a>
+        </div>
+
+        <script>
+            // Form submission
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Clear previous errors
+                document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+                
+                // Get form data
+                const formData = {
+                    username: document.getElementById('username').value.trim(),
+                    password: document.getElementById('password').value
+                };
+                
+                // Validation
+                let hasError = false;
+                
+                if (!formData.username) {
+                    document.getElementById('usernameError').style.display = 'block';
+                    hasError = true;
+                }
+                
+                if (!formData.password) {
+                    document.getElementById('passwordError').style.display = 'block';
+                    hasError = true;
+                }
+                
+                if (hasError) return;
+                
+                // Submit data
+                try {
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        // Redirect to home page
+                        window.location.href = '/';
+                    } else {
+                        alert('Login failed: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('Network error, please try again');
+                    console.error('Error:', error);
+                }
+            });
+        </script>
+    </body>
+    </html>
+    """
+    
     @app.route('/')
     def index():
         """主页"""
@@ -535,6 +726,17 @@ def create_progressive_app():
     def register():
         """用户注册页面"""
         return render_template_string(REGISTER_TEMPLATE)
+    
+    @app.route('/login')
+    def login():
+        """用户登录页面"""
+        return render_template_string(LOGIN_TEMPLATE)
+    
+    @app.route('/logout')
+    def logout():
+        """用户退出"""
+        session.pop('user_id', None)
+        return redirect(url_for('index'))
     
     @app.route('/api/users', methods=['POST'])
     def create_user():
