@@ -9,17 +9,16 @@ baidu-aip
 sentence-transformers
 tinydb
 faiss-cpu
-numpy 
+numpy<2.0
 chardet
 seaborn
 matplotlib
 pymongo
 pydub
 bson
-librosa
-# pyaudioop
+# librosa  # 依赖复杂，可能导致安装失败
 torch
 dnspython
 gunicorn
 flask-cors
-hanlp
+# hanlp  # 依赖复杂，可能导致安装失败

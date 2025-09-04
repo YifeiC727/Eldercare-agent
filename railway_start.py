@@ -35,6 +35,25 @@ def start_railway_server():
         print(f"⚠️ 缺少环境变量: {', '.join(missing_vars)}")
         print("请在Railway控制台设置这些环境变量")
     
+    # 检查可选依赖
+    try:
+        import pyaudio
+        print("✅ PyAudio可用")
+    except ImportError:
+        print("⚠️ PyAudio不可用，音频功能将受限")
+    
+    try:
+        import librosa
+        print("✅ Librosa可用")
+    except ImportError:
+        print("⚠️ Librosa不可用，音频处理功能将受限")
+    
+    try:
+        import hanlp
+        print("✅ HanLP可用")
+    except ImportError:
+        print("⚠️ HanLP不可用，将使用基础模式")
+    
     # 启动应用
     try:
         app.run(host=host, port=port, debug=False)
