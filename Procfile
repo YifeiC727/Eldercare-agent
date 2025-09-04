@@ -1,1 +1,1 @@
-web: python start_minimal.py
+web: python start_with_existing_system.py
